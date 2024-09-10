@@ -53,9 +53,6 @@ app.use(hpp());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static("./public"));
-app.get("/", (req, res) => {
-  res.send("Hello this is Deviso");
-});
 app.use("/users", userRouter);
 app.use("/devis", devisRouter);
 app.use("/facture", factureRouter);
