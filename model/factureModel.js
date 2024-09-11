@@ -1,10 +1,10 @@
-const { addDays } = require("date-fns");
-const mongoose = require("mongoose");
+import { addDays } from "date-fns";
+import { Schema, model } from "mongoose";
 
-const factureSchema = new mongoose.Schema(
+const factureSchema = new Schema(
   {
-    client: { type: mongoose.Schema.Types.ObjectId, ref: "Client" },
-    devis: { type: mongoose.Schema.Types.ObjectId, ref: "Devis" },
+    client: { type: Schema.Types.ObjectId, ref: "Client" },
+    devis: { type: Schema.Types.ObjectId, ref: "Devis" },
     bonLivraison: String,
     payer: {
       type: Boolean,
@@ -14,7 +14,7 @@ const factureSchema = new mongoose.Schema(
       type: Date,
       default: addDays(new Date(), 90),
     },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    user: { type: Schema.Types.ObjectId, ref: "User" },
     active: {
       type: Boolean,
       default: true,
@@ -31,6 +31,6 @@ factureSchema.pre(/^find/, function (next) {
   next();
 });
 
-const Facture = mongoose.model("Facture", factureSchema);
+const Facture = model("Facture", factureSchema);
 
-module.exports = Facture;
+export default Facture;

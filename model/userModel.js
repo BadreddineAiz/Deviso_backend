@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
-const bcrypt = require("bcryptjs");
-const { randomBytes, createHash } = require("crypto");
-const { DefaultFeatures } = require("../data/FeaturesList.js");
+import { Schema, model } from "mongoose";
+import validator from "validator";
+import bcryptjs from "bcryptjs";
+import { randomBytes, createHash } from "crypto";
+import { DefaultFeatures } from "../data/FeaturesList.js";
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
   {
     name: { type: String, required: [true, "Please tell us your name"] },
     email: {
@@ -70,7 +70,7 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
-    this.password = await bcrypt.hash(this.password, 12);
+    this.password = await bcryptjs.hash(this.password, 12);
     this.passwordConfirm = undefined;
   }
   next();
@@ -87,7 +87,7 @@ userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
-  return await bcrypt.compare(candidatePassword, userPassword);
+  return await bcryptjs.compare(candidatePassword, userPassword);
 };
 
 userSchema.pre(/^find/, function (next) {
@@ -115,6 +115,6 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-const User = mongoose.model("User", userSchema);
+const User = model("User", userSchema);
 
-module.exports = User;
+export default User;

@@ -1,23 +1,24 @@
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
-const xss = require("xss-clean");
-const hpp = require("hpp");
-require("dotenv").config({ path: "./config.env" });
+import express, { json, urlencoded } from "express";
+import cors from "cors";
+import { connect } from "mongoose";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss-clean";
+import hpp from "hpp";
+import dotenv from "dotenv";
 
-const userRouter = require("./routes/userRouter.js");
-const clientRouter = require("./routes/ClientRouter.js");
-const factureRouter = require("./routes/FactureRouter.js");
-const devisRouter = require("./routes/DevisRouter.js");
+import userRouter from "./routes/userRouter.js";
+import clientRouter from "./routes/ClientRouter.js";
+import factureRouter from "./routes/FactureRouter.js";
+import devisRouter from "./routes/DevisRouter.js";
+
+dotenv.config({ path: "./config.env" });
 
 const PORT = process.env.PORT || 5000;
 const app = express();
 
-mongoose
-  .connect(process.env.MONGO_URI)
+connect(process.env.MONGO_URI)
   .then((response) => {
     console.log(`MongDB Connected : ${response.connection.host}`);
   })
@@ -38,7 +39,7 @@ app.use(
 //Body Parser
 app.use(cors());
 app.use(
-  express.json({
+  json({
     limit: "10kb", // Limit the amount of data sent to client
   })
 );
@@ -50,7 +51,7 @@ app.use(xss());
 // Prevent Parameter pollution
 app.use(hpp());
 
-app.use(express.urlencoded({ extended: false }));
+app.use(urlencoded({ extended: false }));
 
 app.use(express.static("./public"));
 app.use("/users", userRouter);

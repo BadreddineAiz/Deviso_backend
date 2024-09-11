@@ -1,23 +1,11 @@
-const express = require("express");
-const {
-  createDevis,
-  deleteDevis,
-  exportDevis,
-  getDevis,
-  getDeviss,
-  updateDevis,
-} = require("../controller/devisController.js");
+import { Router } from "express";
+import { createDevis, deleteDevis, exportDevis, getDevis, getDeviss, updateDevis } from "../controller/devisController.js";
 
-const { protect } = require("../controller/authController.js");
-const featuresCheck = require("../middlewares/featuresCheck.js");
-const {
-  DEVIS_CREATE,
-  DEVIS_DELETE,
-  DEVIS_READ,
-  DEVIS_UPDATE,
-} = require("../data/FeaturesList.js");
+import { protect } from "../controller/authController.js";
+import featuresCheck from "../middlewares/featuresCheck.js";
+import { DEVIS_CREATE, DEVIS_DELETE, DEVIS_READ, DEVIS_UPDATE } from "../data/FeaturesList.js";
 
-const router = express.Router();
+const router = Router();
 
 router.use(protect);
 
@@ -34,4 +22,4 @@ router
   .patch(featuresCheck(DEVIS_UPDATE), updateDevis)
   .delete(featuresCheck(DEVIS_DELETE), deleteDevis);
 
-module.exports = router;
+export default router;

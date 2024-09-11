@@ -1,22 +1,11 @@
-const express = require("express");
-const {
-  createClient,
-  deleteClient,
-  getClient,
-  getClients,
-  updateClient,
-} = require("../controller/clientController.js");
+import { Router } from "express";
+import { createClient, deleteClient, getClient, getClients, updateClient } from "../controller/clientController.js";
 
-const { protect } = require("../controller/authController.js");
-const featuresCheck = require("../middlewares/featuresCheck.js");
-const {
-  CLIENT_CREATE,
-  CLIENT_DELETE,
-  CLIENT_READ,
-  CLIENT_UPDATE,
-} = require("../data/FeaturesList.js");
+import { protect } from "../controller/authController.js";
+import featuresCheck from "../middlewares/featuresCheck.js";
+import { CLIENT_CREATE, CLIENT_DELETE, CLIENT_READ, CLIENT_UPDATE } from "../data/FeaturesList.js";
 
-const router = express.Router();
+const router = Router();
 
 router.use(protect);
 
@@ -31,4 +20,4 @@ router
   .patch(featuresCheck(CLIENT_UPDATE), updateClient)
   .delete(featuresCheck(CLIENT_DELETE), deleteClient);
 
-module.exports = router;
+export default router;

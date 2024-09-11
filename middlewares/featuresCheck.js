@@ -12,4 +12,4 @@ const featuresCheck = (requiredFeature) => {
   };
 };
 
-module.exports = featuresCheck;
+export default featuresCheck;

@@ -1,6 +1,6 @@
-const helpers = require("../utils/helpers.js");
+import { numberToFrench } from "../utils/helpers.js";
 
-exports.FactureDevisFooterTemplate = (docType, docNumber) => `
+export function FactureDevisFooterTemplate(docType, docNumber) { return `
     <div style="
       position: fixed;
       bottom:30px;
@@ -19,9 +19,9 @@ exports.FactureDevisFooterTemplate = (docType, docNumber) => `
         Page <span class="pageNumber"></span> / <span class="totalPages"></span>
       </div>
     </div>
-`;
+`;   }
 
-exports.FactureDevisTemplate = ({
+export function FactureDevisTemplate({
   docType,
   object,
   mainColor,
@@ -45,7 +45,7 @@ exports.FactureDevisTemplate = ({
   userTel,
   userAddress,
   numeroBonCommand,
-}) => {
+}) {
   let TotalHt = articles.reduce(
     (previous, current) => previous + current.prixHT * current.quantity,
     0
@@ -308,7 +308,7 @@ exports.FactureDevisTemplate = ({
           <div>TOTAL HT : <span>${TotalHt} DH</span></div>
           <div>TVA : <span>${TotalTVA} DH</span></div>
           <div>TOTAL TTC : <span>${TotalTTC} DH</span></div>
-          <div><span>${helpers.numberToFrench(TotalTTC)} Dirham</span></div>
+          <div><span>${numberToFrench(TotalTTC)} Dirham</span></div>
         </div>
       </section>
       
@@ -326,4 +326,4 @@ exports.FactureDevisTemplate = ({
   </body>
 </html>
 `;
-};
+}

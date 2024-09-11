@@ -1,26 +1,23 @@
-const asyncHandler = require("express-async-handler");
-const puppeteer = require("puppeteer");
-const path = require("path");
-const { promises: fs } = require("fs");
+import asyncHandler from "express-async-handler";
+import { launch } from "puppeteer";
+import { promises as fs } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
-const {
-  getDocuments,
-  getDocument,
-  deleteDocument,
-} = require("./handlerFactory.js");
-const Devis = require("../model/devisModel.js");
-const {
+import { getDocuments, getDocument, deleteDocument } from "./handlerFactory.js";
+import Devis from "../model/devisModel.js";
+import {
   FactureDevisFooterTemplate,
   FactureDevisTemplate,
-} = require("../templates/Templates.js");
-const { format } = require("date-fns");
-const { filterObj } = require("../utils/helpers.js");
-const Client = require("../model/clientModel.js");
+} from "../templates/Templates.js";
+import { format } from "date-fns";
+import { filterObj } from "../utils/helpers.js";
+import Client from "../model/clientModel.js";
 
-exports.getDevis = getDocument(Devis);
-exports.getDeviss = getDocuments(Devis);
+export const getDevis = getDocument(Devis);
+export const getDeviss = getDocuments(Devis);
 
-exports.createDevis = asyncHandler(async (req, res) => {
+export const createDevis = asyncHandler(async (req, res) => {
   if (!req.body) {
     return res.status(400).json({
       status: "fail",
@@ -48,7 +45,7 @@ exports.createDevis = asyncHandler(async (req, res) => {
   });
 });
 
-exports.updateDevis = asyncHandler(async (req, res) => {
+export const updateDevis = asyncHandler(async (req, res) => {
   const filter = { user: req.user.id };
   const filtredBody = filterObj(req.body, "articles", "numeroBonCommand");
 
@@ -74,9 +71,9 @@ exports.updateDevis = asyncHandler(async (req, res) => {
   });
 });
 
-exports.deleteDevis = deleteDocument(Devis);
+export const deleteDevis = deleteDocument(Devis);
 
-exports.exportDevis = asyncHandler(async (req, res) => {
+export const exportDevis = asyncHandler(async (req, res) => {
   const devis = await Devis.findOne({
     user: req.user.id,
     _id: req.params.documentID,
@@ -144,12 +141,14 @@ exports.exportDevis = asyncHandler(async (req, res) => {
   });
 
   // Launch Puppeteer and generate PDF
-  const browser = await puppeteer.launch();
+  const browser = await launch();
   const page = await browser.newPage();
   await page.setContent(htmlContent);
 
   // Path where the PDF will be saved
-  const tempFilePath = path.join(
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const tempFilePath = join(
     __dirname,
     `../temp/devis_${user._id}_${docNumber}.pdf`
   );

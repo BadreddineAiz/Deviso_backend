@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const Counter = require("./counterModel.js");
+import { Schema, model } from "mongoose";
+import Counter from "./counterModel.js";
 
-const articleSchema = new mongoose.Schema({
+const articleSchema = new Schema({
   designation: {
     type: String,
     required: [true, "Please add Designation"],
@@ -20,10 +20,10 @@ const articleSchema = new mongoose.Schema({
   },
 });
 
-const devisSchema = new mongoose.Schema(
+const devisSchema = new Schema(
   {
-    client: { type: mongoose.Schema.Types.ObjectId, ref: "Client" },
-    facture: { type: mongoose.Schema.Types.ObjectId, ref: "Facture" },
+    client: { type: Schema.Types.ObjectId, ref: "Client" },
+    facture: { type: Schema.Types.ObjectId, ref: "Facture" },
     object: {
       type: String,
       required: [true, "Please add Object"],
@@ -32,7 +32,7 @@ const devisSchema = new mongoose.Schema(
     articles: [articleSchema],
     bonCommand: String,
     numeroBonCommand: String,
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    user: { type: Schema.Types.ObjectId, ref: "User" },
     active: {
       type: Boolean,
       default: true,
@@ -70,6 +70,6 @@ devisSchema.pre("save", async function (next) {
   }
 });
 
-const Devis = mongoose.model("Devis", devisSchema);
+const Devis = model("Devis", devisSchema);
 
-module.exports = Devis;
+export default Devis;

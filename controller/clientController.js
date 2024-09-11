@@ -1,15 +1,15 @@
-const {
+import {
   getDocuments,
   getDocument,
   createDocument,
   updateDocument,
   deleteDocument,
-} = require("./handlerFactory");
+} from "./handlerFactory.js";
 
-const Client = require("../model/clientModel");
+import Client from "../model/clientModel.js";
 
-exports.getClient = getDocument(Client);
-exports.getClients = getDocuments(Client);
-exports.createClient = createDocument(Client);
-exports.updateClient = updateDocument(Client);
-exports.deleteClient = deleteDocument(Client);
+export const getClient = getDocument(Client);
+export const getClients = getDocuments(Client);
+export const createClient = createDocument(Client);
+export const updateClient = updateDocument(Client);
+export const deleteClient = deleteDocument(Client);

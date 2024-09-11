@@ -1,22 +1,23 @@
-const dateFns = require("date-fns");
+import { differenceInDays, parseISO, formatDistance } from "date-fns";
 
 // We want to make this function work for both Date objects and strings (which come from Supabase)
-exports.subtractDates = (dateStr1, dateStr2) =>
-  dateFns.differenceInDays(
-    dateFns.parseISO(String(dateStr1)),
-    dateFns.parseISO(String(dateStr2))
+export function subtractDates(dateStr1, dateStr2) {
+  return differenceInDays(
+    parseISO(String(dateStr1)),
+    parseISO(String(dateStr2))
   );
+}
 
-exports.formatDistanceFromNow = (dateStr) =>
-  dateFns
-    .formatDistance(dateFns.parseISO(dateStr), new Date(), {
-      addSuffix: true,
-    })
+export function formatDistanceFromNow(dateStr) {
+  return formatDistance(parseISO(dateStr), new Date(), {
+    addSuffix: true,
+  })
     .replace("about ", "")
     .replace("in", "In");
+}
 
 // Supabase needs an ISO date string. However, that string will be different on every render because the MS or SEC have changed, which isn't good. So we use this trick to remove any time
-exports.getToday = function (options = {}) {
+export function getToday(options = {}) {
   const today = new Date();
 
   // This is necessary to compare with created_at from Supabase, because it it not at 0.0.0.0, so we need to set the date to be END of the day when we compare it with earlier dates
@@ -25,12 +26,14 @@ exports.getToday = function (options = {}) {
     today.setUTCHours(23, 59, 59, 999);
   else today.setUTCHours(0, 0, 0, 0);
   return today.toISOString();
-};
+}
 
-exports.formatCurrency = (value) =>
-  new Intl.NumberFormat("en", { style: "currency", currency: "USD" }).format(
-    value
-  );
+export function formatCurrency(value) {
+  return new Intl.NumberFormat("en", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
 
 const units = [
   "",
@@ -73,7 +76,7 @@ const thousand = "mille";
 const million = "million";
 const billion = "milliard";
 
-exports.numberToFrench = (n) => {
+export function numberToFrench(n) {
   if (typeof n !== "number" || isNaN(n)) {
     return "Nombre invalide";
   }
@@ -95,7 +98,7 @@ exports.numberToFrench = (n) => {
   }
 
   return result;
-};
+}
 
 function convertInteger(n) {
   if (n === 0) return "zéro";
@@ -157,7 +160,7 @@ function convertInteger(n) {
   return "Nombre trop grand";
 }
 
-exports.filterObj = (obj, ...fields) => {
+export function filterObj(obj, ...fields) {
   const filtredObj = {};
   for (const [key, value] of Object.entries(obj)) {
     if (fields.includes(key)) {
@@ -165,4 +168,4 @@ exports.filterObj = (obj, ...fields) => {
     }
   }
   return filtredObj;
-};
+}

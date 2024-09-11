@@ -1,9 +1,9 @@
-const asyncHandler = require("express-async-handler");
-const ApiFeatures = require("../utils/apiFeatures");
+import asyncHandler from "express-async-handler";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 // Handler to get multiple documents with filtering, sorting, and pagination
-exports.getDocuments = (Model) =>
-  asyncHandler(async (req, res) => {
+export function getDocuments(Model) {
+  return asyncHandler(async (req, res) => {
     const filter = { user: req.user.id };
     const features = new ApiFeatures(Model.find(filter), req.query)
       .filter()
@@ -18,10 +18,11 @@ exports.getDocuments = (Model) =>
       data: documents,
     });
   });
+}
 
 // Handler to get a single document by ID
-exports.getDocument = (Model) =>
-  asyncHandler(async (req, res, next) => {
+export function getDocument(Model) {
+  return asyncHandler(async (req, res, next) => {
     const filter = { user: req.user.id };
     const document = await Model.findOne({
       _id: req.params.documentID,
@@ -35,10 +36,11 @@ exports.getDocument = (Model) =>
       data: document,
     });
   });
+}
 
 // Handler to create a new document
-exports.createDocument = (Model) =>
-  asyncHandler(async (req, res, next) => {
+export function createDocument(Model) {
+  return asyncHandler(async (req, res, next) => {
     if (!req.body) {
       return next({ status: 400, message: "Please enter Document Data" });
     }
@@ -48,10 +50,11 @@ exports.createDocument = (Model) =>
       data: document,
     });
   });
+}
 
 // Handler to delete a document by ID (soft delete)
-exports.deleteDocument = (Model) =>
-  asyncHandler(async (req, res, next) => {
+export function deleteDocument(Model) {
+  return asyncHandler(async (req, res, next) => {
     const filter = { user: req.user.id };
     const document = await Model.findOneAndUpdate(
       {
@@ -69,10 +72,11 @@ exports.deleteDocument = (Model) =>
       data: null,
     });
   });
+}
 
 // Handler to update a document by ID
-exports.updateDocument = (Model) =>
-  asyncHandler(async (req, res, next) => {
+export function updateDocument(Model) {
+  return asyncHandler(async (req, res, next) => {
     const filter = { user: req.user.id };
     const document = await Model.findOneAndUpdate(
       {
@@ -90,3 +94,4 @@ exports.updateDocument = (Model) =>
       data: document,
     });
   });
+}

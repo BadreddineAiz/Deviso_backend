@@ -1,18 +1,18 @@
-const DEVIS_CREATE = "DEVIS/CREATE";
-const DEVIS_READ = "DEVIS/READ";
-const DEVIS_UPDATE = "DEVIS/UPDATE";
-const DEVIS_DELETE = "DEVIS/DELETE";
+export const DEVIS_CREATE = "DEVIS/CREATE";
+export const DEVIS_READ = "DEVIS/READ";
+export const DEVIS_UPDATE = "DEVIS/UPDATE";
+export const DEVIS_DELETE = "DEVIS/DELETE";
 
-const FACTURE_CREATE = "FACTURE/CREATE";
-const FACTURE_READ = "FACTURE/READ";
-const FACTURE_DELETE = "FACTURE/DELETE";
+export const FACTURE_CREATE = "FACTURE/CREATE";
+export const FACTURE_READ = "FACTURE/READ";
+export const FACTURE_DELETE = "FACTURE/DELETE";
 
-const CLIENT_CREATE = "CLIENT/CREATE";
-const CLIENT_READ = "CLIENT/READ";
-const CLIENT_UPDATE = "CLIENT/UPDATE";
-const CLIENT_DELETE = "CLIENT/DELETE";
+export const CLIENT_CREATE = "CLIENT/CREATE";
+export const CLIENT_READ = "CLIENT/READ";
+export const CLIENT_UPDATE = "CLIENT/UPDATE";
+export const CLIENT_DELETE = "CLIENT/DELETE";
 
-const DefaultFeatures = [
+export const DefaultFeatures = [
   //DEVIS
   DEVIS_CREATE,
   DEVIS_READ,
@@ -31,7 +31,7 @@ const DefaultFeatures = [
 
 const AllFeatures = [...DefaultFeatures];
 
-module.exports = {
+export default {
   //DEVIS
   DEVIS_CREATE,
   DEVIS_READ,

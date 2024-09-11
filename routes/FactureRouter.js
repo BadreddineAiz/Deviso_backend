@@ -1,21 +1,11 @@
-const express = require("express");
-const {
-  devisToFacture,
-  deleteFacture,
-  getFacture,
-  getFactures,
-  exportFacture,
-} = require("../controller/factureController.js");
+import { Router } from "express";
+import { devisToFacture, deleteFacture, getFacture, getFactures, exportFacture } from "../controller/factureController.js";
 
-const { protect } = require("../controller/authController.js");
-const featuresCheck = require("../middlewares/featuresCheck.js");
-const {
-  FACTURE_CREATE,
-  FACTURE_DELETE,
-  FACTURE_READ,
-} = require("../data/FeaturesList.js");
+import { protect } from "../controller/authController.js";
+import featuresCheck from "../middlewares/featuresCheck.js";
+import { FACTURE_CREATE, FACTURE_DELETE, FACTURE_READ } from "../data/FeaturesList.js";
 
-const router = express.Router();
+const router = Router();
 
 router.use(protect);
 
@@ -34,4 +24,4 @@ router
   .get(featuresCheck(FACTURE_READ), getFacture)
   .delete(featuresCheck(FACTURE_DELETE), deleteFacture);
 
-module.exports = router;
+export default router;

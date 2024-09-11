@@ -1,21 +1,22 @@
-const asyncHandler = require("express-async-handler");
-const puppeteer = require("puppeteer");
-const path = require("path");
-const { promises: fs } = require("fs");
+import asyncHandler from "express-async-handler";
+import { launch } from "puppeteer";
+import { promises as fs } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
-const { getDocuments, getDocument } = require("./handlerFactory.js");
-const Facture = require("../model/factureModel.js");
-const Devis = require("../model/devisModel.js");
-const {
+import { getDocuments, getDocument } from "./handlerFactory.js";
+import Facture from "../model/factureModel.js";
+import Devis from "../model/devisModel.js";
+import {
   FactureDevisFooterTemplate,
   FactureDevisTemplate,
-} = require("../templates/Templates.js");
-const { format } = require("date-fns");
+} from "../templates/Templates.js";
+import { format } from "date-fns";
 
-exports.getFacture = getDocument(Facture);
-exports.getFactures = getDocuments(Facture);
+export const getFacture = getDocument(Facture);
+export const getFactures = getDocuments(Facture);
 
-exports.devisToFacture = asyncHandler(async (req, res) => {
+export const devisToFacture = asyncHandler(async (req, res) => {
   if (!req.body.devis) {
     return res.status(400).json({
       status: "fail",
@@ -59,7 +60,7 @@ exports.devisToFacture = asyncHandler(async (req, res) => {
   });
 });
 
-exports.exportFacture = asyncHandler(async (req, res) => {
+export const exportFacture = asyncHandler(async (req, res) => {
   const facture = await Facture.findOne({
     user: req.user.id,
     _id: req.params.documentID,
@@ -131,12 +132,14 @@ exports.exportFacture = asyncHandler(async (req, res) => {
   });
 
   // Launch Puppeteer and generate PDF
-  const browser = await puppeteer.launch();
+  const browser = await launch();
   const page = await browser.newPage();
   await page.setContent(htmlContent);
 
   // Path where the PDF will be saved
-  const tempFilePath = path.join(
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const tempFilePath = join(
     __dirname,
     `../temp/facture_${user._id}_${docNumber}.pdf`
   );
@@ -165,7 +168,7 @@ exports.exportFacture = asyncHandler(async (req, res) => {
   });
 });
 
-exports.deleteFacture = asyncHandler(async (req, res) => {
+export const deleteFacture = asyncHandler(async (req, res) => {
   const facture = await Facture.findOneAndUpdate(
     {
       user: req.user.id,

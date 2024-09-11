@@ -1,9 +1,9 @@
-const User = require("../model/userModel");
-const jsonwebtoken = require("jsonwebtoken");
-const asyncHandler = require("express-async-handler");
-const { promisify } = require("util");
-const sendEmail = require("../utils/email");
-const { createHash } = require("crypto");
+import User from "../model/userModel.js";
+import jsonwebtoken from "jsonwebtoken";
+import asyncHandler from "express-async-handler";
+import { promisify } from "util";
+import sendEmail from "../utils/email.js";
+import { createHash } from "crypto";
 
 const signToken = (id) => {
   return jsonwebtoken.sign({ id }, process.env.JWT_SECRET, {
@@ -27,7 +27,7 @@ const createAndSendToken = (user, res) => {
   res.status(200).json({ status: "success", token, data: { user } });
 };
 
-exports.signUp = asyncHandler(async (req, res) => {
+export const signUp = asyncHandler(async (req, res) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -46,7 +46,7 @@ exports.signUp = asyncHandler(async (req, res) => {
   createAndSendToken(newUser, res);
 });
 
-exports.login = asyncHandler(async (req, res, next) => {
+export const login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
   // Check if email and password exist
@@ -64,7 +64,7 @@ exports.login = asyncHandler(async (req, res, next) => {
   createAndSendToken(user, res);
 });
 
-exports.protect = asyncHandler(async (req, _res, next) => {
+export const protect = asyncHandler(async (req, _res, next) => {
   // Verify if the token exists
   let token;
   if (
@@ -109,7 +109,7 @@ exports.protect = asyncHandler(async (req, _res, next) => {
   next();
 });
 
-exports.restrictTo = (...roles) => {
+export function restrictTo(...roles) {
   return (req, _, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
@@ -118,9 +118,9 @@ exports.restrictTo = (...roles) => {
     }
     next();
   };
-};
+}
 
-exports.forgotPassword = asyncHandler(async (req, res, next) => {
+export const forgotPassword = asyncHandler(async (req, res, next) => {
   if (!req.body.email) {
     return next(new Error("Please provide us with your email address"));
   }
@@ -164,7 +164,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   });
 });
 
-exports.resetPassword = asyncHandler(async (req, res, next) => {
+export const resetPassword = asyncHandler(async (req, res, next) => {
   // 1) Get user based on the Token
   const hashedToken = createHash("sha256")
     .update(req.params.token)
@@ -188,7 +188,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   createAndSendToken(user, res);
 });
 
-exports.updatePassword = asyncHandler(async (req, res, next) => {
+export const updatePassword = asyncHandler(async (req, res, next) => {
   // 1) Get the user from the collection
   const user = await User.findById(req.user.id).select("+password");
 

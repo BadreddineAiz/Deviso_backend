@@ -1,20 +1,9 @@
-const express = require("express");
-const {
-  updateMe,
-  deleteMe,
-  getMe,
-} = require("../controller/userController.js");
+import { Router } from "express";
+import { updateMe, deleteMe, getMe } from "../controller/userController.js";
 
-const {
-  signUp,
-  login,
-  forgotPassword,
-  resetPassword,
-  protect,
-  updatePassword,
-} = require("../controller/authController.js");
+import { signUp, login, forgotPassword, resetPassword, protect, updatePassword } from "../controller/authController.js";
 
-const router = express.Router();
+const router = Router();
 
 router.post("/signup", signUp);
 
@@ -35,4 +24,4 @@ router.patch("/updateMyPassword", updatePassword);
 
 router.delete("/deleteMe", deleteMe);
 
-module.exports = router;
+export default router;

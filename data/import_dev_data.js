@@ -1,12 +1,11 @@
-const mongoose = require("mongoose");
-const fs = require("fs");
+import { connect } from "mongoose";
+import { readFileSync } from "fs";
 require("dotenv").config({ path: "../config.env" });
-const Product = require("../model/productModel");
+import { create, deleteMany } from "../model/productModel";
 
-const products = JSON.parse(fs.readFileSync("products_example.json", "utf-8"));
+const products = JSON.parse(readFileSync("products_example.json", "utf-8"));
 
-mongoose
-  .connect(process.env.MONGO_URI)
+connect(process.env.MONGO_URI)
   .then((response) => {
     console.log(`MongDB Connected : ${response.connection.host}`);
   })
@@ -16,7 +15,7 @@ mongoose
 
 const importData = async () => {
   try {
-    await Product.create(products);
+    await create(products);
     console.log("Data uploaded successfully !");
     process.exit(1);
   } catch (err) {
@@ -26,7 +25,7 @@ const importData = async () => {
 
 const deleteAllData = async () => {
   try {
-    await Product.deleteMany();
+    await deleteMany();
     console.log("Data Deleted successfully !");
     process.exit(1);
   } catch (err) {

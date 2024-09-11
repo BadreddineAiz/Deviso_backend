@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const clientSchema = new Schema(
@@ -29,4 +29,4 @@ clientSchema.pre(/^find/, function (next) {
 
 const Client = model("Client", clientSchema);
 
-module.exports = Client;
+export default Client;
