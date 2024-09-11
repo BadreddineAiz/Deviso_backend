@@ -132,7 +132,10 @@ export const exportFacture = asyncHandler(async (req, res) => {
   });
 
   // Launch Puppeteer and generate PDF
-  const browser = await launch();
+  const browser = await launch({
+    headless: true, // Ensure headless mode is enabled
+    args: ["--no-sandbox", "--disable-setuid-sandbox"], // Add these flags
+  });
   const page = await browser.newPage();
   await page.setContent(htmlContent);
 
