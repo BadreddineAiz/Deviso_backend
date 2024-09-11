@@ -93,7 +93,11 @@ export function FactureDevisTemplate({
         .document {
             height:${Math.ceil(articles.length / 20) * 100}vh;
             display: grid;
-            grid-template-rows: auto auto 1fr auto auto;
+            grid-template-rows: ${
+              docType != "Bon de Livraison"
+                ? "auto auto 1fr auto auto"
+                : "auto auto 1fr auto"
+            };
         }
 
         .date {
@@ -118,6 +122,7 @@ export function FactureDevisTemplate({
             width: 130px;
             padding: 20px;
             margin-left: 10px;
+            border-radius: 50%;
         }
 
         header .client-info {
@@ -171,7 +176,12 @@ export function FactureDevisTemplate({
         .row {
             padding: 5px 10px;
             display: grid;
-            grid-template-columns: 1fr 100px 85px 50px;
+            grid-template-columns: ${
+              docType != "Bon de Livraison"
+                ? "1fr 100px 85px 50px"
+                : "1fr 100px"
+            };
+            
             page-break-inside: avoid;
         }
         .row div {
@@ -228,7 +238,7 @@ export function FactureDevisTemplate({
         }
     </style>
 
-    <title>${docType}</title>
+    <title>${docType} ${docNumber}</title>
   </head>
   <body>
     <div class="document">
@@ -280,8 +290,13 @@ export function FactureDevisTemplate({
           <div class="row">
             <div class="designation">Designation</div>
             <div class="quantity">Quantite</div>
-            <div class="prixHT">Prix HT</div>
-            <div class="tva">TVA</div>
+            ${
+              docType != "Bon de Livraison"
+                ? `<div class="prixHT">Prix HT</div>
+                  <div class="tva">TVA</div>`
+                : ""
+            }
+            
           </div>
         </div>
         <div class="table-content">
@@ -294,10 +309,19 @@ export function FactureDevisTemplate({
                   }">
                       <div class="designation">${article.designation}</div>
                       <div class="quantity">${article.quantity}</div>
-                      <div class="prixHT"><span>${
-                        article.prixHT
-                      }</span> DH</div>
-                      <div class="tva"><span>${article.tva * 100}</span>%</div>
+                      ${
+                        docType != "Bon de Livraison"
+                          ? `
+                          <div class="prixHT"><span>${
+                            article.prixHT
+                          }</span> DH</div>
+                          <div class="tva"><span>${
+                            article.tva * 100
+                          }</span>%</div>
+                      `
+                          : ""
+                      }
+                      
                   </article>
                 `;
               })
@@ -305,15 +329,20 @@ export function FactureDevisTemplate({
           
         </div>
       </main>
-
-      <section class="total">
-        <div>
-          <div>TOTAL HT : <span>${TotalHt} DH</span></div>
-          <div>TVA : <span>${TotalTVA} DH</span></div>
-          <div>TOTAL TTC : <span>${TotalTTC} DH</span></div>
-          <div><span>${numberToFrench(TotalTTC)} Dirham</span></div>
-        </div>
-      </section>
+      ${
+        docType != "Bon de Livraison"
+          ? `
+        <section class="total">
+          <div>
+            <div>TOTAL HT : <span>${TotalHt} DH</span></div>
+            <div>TVA : <span>${TotalTVA} DH</span></div>
+            <div>TOTAL TTC : <span>${TotalTTC} DH</span></div>
+            <div><span>${numberToFrench(TotalTTC)} Dirham</span></div>
+          </div>
+        </section>
+      `
+          : ""
+      }
       
       <footer>
         <div class="user-ice">ICE : <span>${userICE}</span></div>

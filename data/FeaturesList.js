@@ -5,7 +5,9 @@ export const DEVIS_DELETE = "DEVIS/DELETE";
 
 export const FACTURE_CREATE = "FACTURE/CREATE";
 export const FACTURE_READ = "FACTURE/READ";
+export const FACTURE_UPDATE = "FACTURE/UPDATE";
 export const FACTURE_DELETE = "FACTURE/DELETE";
+export const BONLIVRAISON_READ = "BONLIVRAISON/READ";
 
 export const CLIENT_CREATE = "CLIENT/CREATE";
 export const CLIENT_READ = "CLIENT/READ";
@@ -21,7 +23,9 @@ export const DefaultFeatures = [
   //FACTURES
   FACTURE_CREATE,
   FACTURE_READ,
+  FACTURE_UPDATE,
   FACTURE_DELETE,
+  BONLIVRAISON_READ,
   //CLIENTS
   CLIENT_CREATE,
   CLIENT_READ,
@@ -29,22 +33,4 @@ export const DefaultFeatures = [
   CLIENT_DELETE,
 ];
 
-const AllFeatures = [...DefaultFeatures];
-
-export default {
-  //DEVIS
-  DEVIS_CREATE,
-  DEVIS_READ,
-  DEVIS_UPDATE,
-  DEVIS_DELETE,
-  //FACTURES
-  FACTURE_CREATE,
-  FACTURE_READ,
-  FACTURE_DELETE,
-  //CLIENTS
-  CLIENT_CREATE,
-  CLIENT_READ,
-  CLIENT_UPDATE,
-  CLIENT_DELETE,
-  AllFeatures,
-};
+export const AllFeatures = [...DefaultFeatures];

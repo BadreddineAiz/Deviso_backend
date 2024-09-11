@@ -13,6 +13,31 @@ import {
 import { format } from "date-fns";
 import { fetchImageAsBase64, filterObj } from "../utils/helpers.js";
 import Client from "../model/clientModel.js";
+import multer from "multer";
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/bonCommands");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `bonCommand-${req.user.id}-${Date.now()}.pdf`);
+  },
+});
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.split("/")[1] == "pdf") {
+    cb(null, true);
+  } else {
+    cb(new Error("Not a PDF File! Please upload only PDF"), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+export const uploadBonCommand = upload.single("bonCommand");
 
 export const getDevis = getDocument(Devis);
 export const getDeviss = getDocuments(Devis);
@@ -37,6 +62,8 @@ export const createDevis = asyncHandler(async (req, res) => {
     });
   }
 
+  if (req.file) req.body.bonCommand = req.file.filename;
+
   const devis = await Devis.create({ ...req.body, user: req.user.id });
 
   res.status(200).json({
@@ -48,6 +75,8 @@ export const createDevis = asyncHandler(async (req, res) => {
 export const updateDevis = asyncHandler(async (req, res) => {
   const filter = { user: req.user.id };
   const filtredBody = filterObj(req.body, "articles", "numeroBonCommand");
+
+  if (req.file) filtredBody.bonCommand = req.file.filename;
 
   const devis = await Devis.findOneAndUpdate(
     {

@@ -174,6 +174,7 @@ export function filterObj(obj, ...fields) {
 
 export const fetchImageAsBase64 = async (url) => {
   const response = await fetch(url);
-  const buffer = await response.buffer();
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer); // Convert the arrayBuffer to a Node.js Buffer
   return `data:image/png;base64,${buffer.toString("base64")}`;
 };

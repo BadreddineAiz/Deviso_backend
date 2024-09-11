@@ -2,6 +2,38 @@ import User from "../model/userModel.js";
 import asyncHandler from "express-async-handler";
 import { getDocument, getDocuments } from "./handlerFactory.js";
 import { filterObj } from "../utils/helpers.js";
+import multer from "multer";
+import sharp from "sharp";
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Not an image! Please upload only images"), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+export const uploadUserLogo = upload.single("logo");
+
+export const resizeUserLogo = (req, res, next) => {
+  if (!req.file) return next();
+  req.file.filename = `userLogo-${req.user.id}.jpeg`;
+
+  sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/images/users/${req.file.filename}`);
+
+  next();
+};
 
 export const getUsers = getDocuments(User);
 
@@ -31,6 +63,8 @@ export const updateMe = asyncHandler(async (req, res) => {
   }
 
   const filteredBody = filterObj(req.body, "name", "email");
+  if (req.file) filteredBody.logo = req.file.filename;
+
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,

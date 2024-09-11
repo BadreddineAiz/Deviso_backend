@@ -1,9 +1,24 @@
 import { Router } from "express";
-import { devisToFacture, deleteFacture, getFacture, getFactures, exportFacture } from "../controller/factureController.js";
+import {
+  devisToFacture,
+  deleteFacture,
+  getFacture,
+  getFactures,
+  exportFacture,
+  exportBonLivraison,
+  uploadRapport,
+  updateFacture,
+} from "../controller/factureController.js";
 
 import { protect } from "../controller/authController.js";
 import featuresCheck from "../middlewares/featuresCheck.js";
-import { FACTURE_CREATE, FACTURE_DELETE, FACTURE_READ } from "../data/FeaturesList.js";
+import {
+  BONLIVRAISON_READ,
+  FACTURE_CREATE,
+  FACTURE_DELETE,
+  FACTURE_READ,
+  FACTURE_UPDATE,
+} from "../data/FeaturesList.js";
 
 const router = Router();
 
@@ -17,11 +32,18 @@ router.get(
   exportFacture
 );
 
+router.get(
+  "/:documentID/exportBonLivraison",
+  featuresCheck(BONLIVRAISON_READ),
+  exportBonLivraison
+);
+
 router.post("/devisToFacture", featuresCheck(FACTURE_CREATE), devisToFacture);
 
 router
   .route("/:documentID")
   .get(featuresCheck(FACTURE_READ), getFacture)
+  .patch(featuresCheck(FACTURE_UPDATE), uploadRapport, updateFacture)
   .delete(featuresCheck(FACTURE_DELETE), deleteFacture);
 
 export default router;

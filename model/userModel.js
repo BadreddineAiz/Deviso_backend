@@ -20,14 +20,38 @@ const userSchema = new Schema(
       minlength: 8,
       select: false,
     },
-    ice: String,
-    if: String,
-    patente: String,
-    rc: String,
-    cnss: String,
-    rib: String,
-    tel: String,
-    address: String,
+    ice: {
+      type: String,
+      default: "-",
+    },
+    if: {
+      type: String,
+      default: "-",
+    },
+    patente: {
+      type: String,
+      default: "-",
+    },
+    rc: {
+      type: String,
+      default: "-",
+    },
+    cnss: {
+      type: String,
+      default: "-",
+    },
+    rib: {
+      type: String,
+      default: "-",
+    },
+    tel: {
+      type: String,
+      default: "-",
+    },
+    address: {
+      type: String,
+      default: "-",
+    },
     mainColor: {
       type: String,
       default: "#161D6F",

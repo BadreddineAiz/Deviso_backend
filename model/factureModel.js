@@ -5,7 +5,7 @@ const factureSchema = new Schema(
   {
     client: { type: Schema.Types.ObjectId, ref: "Client" },
     devis: { type: Schema.Types.ObjectId, ref: "Devis" },
-    bonLivraison: String,
+    rapport: String,
     payer: {
       type: Boolean,
       default: false,
