@@ -1,4 +1,6 @@
 import { differenceInDays, parseISO, formatDistance } from "date-fns";
+import fetch from "node-fetch";
+import { Buffer } from "buffer";
 
 // We want to make this function work for both Date objects and strings (which come from Supabase)
 export function subtractDates(dateStr1, dateStr2) {
@@ -169,3 +171,9 @@ export function filterObj(obj, ...fields) {
   }
   return filtredObj;
 }
+
+export const fetchImageAsBase64 = async (url) => {
+  const response = await fetch(url);
+  const buffer = await response.buffer();
+  return `data:image/png;base64,${buffer.toString("base64")}`;
+};

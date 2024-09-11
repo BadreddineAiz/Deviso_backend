@@ -1,6 +1,7 @@
 import { numberToFrench } from "../utils/helpers.js";
 
-export function FactureDevisFooterTemplate(docType, docNumber) { return `
+export function FactureDevisFooterTemplate(docType, docNumber) {
+  return `
     <div style="
       position: fixed;
       bottom:30px;
@@ -19,7 +20,8 @@ export function FactureDevisFooterTemplate(docType, docNumber) { return `
         Page <span class="pageNumber"></span> / <span class="totalPages"></span>
       </div>
     </div>
-`;   }
+`;
+}
 
 export function FactureDevisTemplate({
   docType,
@@ -114,6 +116,7 @@ export function FactureDevisTemplate({
 
         header .logo {
             width: 130px;
+            padding: 20px;
             margin-left: 10px;
         }
 

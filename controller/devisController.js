@@ -11,7 +11,7 @@ import {
   FactureDevisTemplate,
 } from "../templates/Templates.js";
 import { format } from "date-fns";
-import { filterObj } from "../utils/helpers.js";
+import { fetchImageAsBase64, filterObj } from "../utils/helpers.js";
 import Client from "../model/clientModel.js";
 
 export const getDevis = getDocument(Devis);
@@ -95,7 +95,9 @@ export const exportDevis = asyncHandler(async (req, res) => {
   const mainColor = user.mainColor;
   const secondColor = user.secondColor;
   const PORT = process.env.PORT || 5000;
-  const logo = `${req.protocol}://${req.hostname}:${PORT}/images/users/${user.logo}`;
+  const logo = await fetchImageAsBase64(
+    `${req.protocol}://${req.hostname}:${PORT}/images/users/${user.logo}`
+  );
   const clientName = client.name;
   const clientTel = client.tel;
   const clientICE = client.ice;
