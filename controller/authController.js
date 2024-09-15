@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import { promisify } from "util";
 import sendEmail from "../utils/email.js";
 import { createHash } from "crypto";
+import AppError from "../utils/appError.js";
 
 const signToken = (id) => {
   return jsonwebtoken.sign({ id }, process.env.JWT_SECRET, {
@@ -18,7 +19,7 @@ const createAndSendToken = (user, res) => {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "Strict",
     httpOnly: true,
   };
@@ -26,7 +27,7 @@ const createAndSendToken = (user, res) => {
 
   res.cookie("jwt", token, cookieOptions);
   user.password = undefined;
-  res.status(200).json({ status: "success", token, data: { user } });
+  res.status(200).json({ status: "success", token, user });
 };
 
 export const signUp = asyncHandler(async (req, res) => {
@@ -53,18 +54,25 @@ export const login = asyncHandler(async (req, res, next) => {
 
   // Check if email and password exist
   if (!email || !password) {
-    return next(new Error("Please provide us with your email and password"));
+    return next(
+      new AppError("Please provide us with your email and password", 401)
+    );
   }
 
   // Verify email and password existence in DB
   const user = await User.findOne({ email }).select("+password");
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new Error("Incorrect email or password"));
+    return next(new AppError("Incorrect email or password", 401));
   }
 
   createAndSendToken(user, res);
 });
+
+export const logout = (req, res) => {
+  res.clearCookie("jwt");
+  res.sendStatus(200);
+};
 
 export const protect = asyncHandler(async (req, _res, next) => {
   // Verify if the token exists
@@ -75,9 +83,14 @@ export const protect = asyncHandler(async (req, _res, next) => {
   ) {
     token = req.headers.authorization.split(" ")[1];
   }
+
+  if (req.cookies) {
+    token = req.cookies.jwt;
+  }
+
   if (!token) {
     return next(
-      new Error("You are not logged in! Please log in to get access.")
+      new AppError("You are not logged in! Please log in to get access.", 401)
     );
   }
 
@@ -92,14 +105,17 @@ export const protect = asyncHandler(async (req, _res, next) => {
 
   if (!currentUser) {
     return next(
-      new Error("The User belonging to this token does no longer exist.")
+      new AppError(
+        "The User belonging to this token does no longer exist.",
+        401
+      )
     );
   }
 
   // Check if user changed password after the token was issued
   if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
-      new Error("User recently changed password! Please log in again.")
+      new AppError("User recently changed password! Please log in again.", 401)
     );
   }
   req.user = currentUser;
@@ -115,7 +131,7 @@ export function restrictTo(...roles) {
   return (req, _, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
-        new Error("You do not have permission to perform this action")
+        new AppError("You do not have permission to perform this action", 403)
       );
     }
     next();
@@ -124,14 +140,14 @@ export function restrictTo(...roles) {
 
 export const forgotPassword = asyncHandler(async (req, res, next) => {
   if (!req.body.email) {
-    return next(new Error("Please provide us with your email address"));
+    return next(new AppError("Please provide us with your email address", 401));
   }
 
   // 1) Get the user by email
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return next(new Error("There is no user with this email address"));
+    return next(new AppError("There is no user with this email address", 401));
   }
 
   // 2) Generate the forgot password token
@@ -156,7 +172,10 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
     return next(
-      new Error("There was an error sending the email. Try again later!")
+      new AppError(
+        "There was an error sending the email. Try again later!",
+        500
+      )
     );
   }
 
@@ -179,7 +198,7 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
 
   // 2) If token has not expired, and there is user, set the new password
   if (!user) {
-    return next(new Error("Token is invalid or has expired"));
+    return next(new AppError("Token is invalid or has expired", 401));
   }
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
@@ -197,10 +216,10 @@ export const updatePassword = asyncHandler(async (req, res, next) => {
   // 2) Compare the current password
   const currentPassword = req.body.currentPassword;
   if (!currentPassword) {
-    return next(new Error("Please enter current password"));
+    return next(new AppError("Please enter current password", 401));
   }
   if (!(await user.correctPassword(currentPassword, user.password))) {
-    return next(new Error("Incorrect Password, please try again!"));
+    return next(new AppError("Incorrect Password, please try again!", 401));
   }
 
   // 3) Change the password

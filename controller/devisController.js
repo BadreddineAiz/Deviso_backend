@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { fetchImageAsBase64, filterObj } from "../utils/helpers.js";
 import Client from "../model/clientModel.js";
 import multer from "multer";
+import AppError from "../utils/appError.js";
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -28,7 +29,7 @@ const multerFilter = (req, file, cb) => {
   if (file.mimetype.split("/")[1] == "pdf") {
     cb(null, true);
   } else {
-    cb(new Error("Not a PDF File! Please upload only PDF"), false);
+    cb(new AppError("Not a PDF File! Please upload only PDF", 500), false);
   }
 };
 

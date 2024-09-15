@@ -4,6 +4,7 @@ import { getDocument, getDocuments } from "./handlerFactory.js";
 import { filterObj } from "../utils/helpers.js";
 import multer from "multer";
 import sharp from "sharp";
+import AppError from "../utils/appError.js";
 
 const multerStorage = multer.memoryStorage();
 
@@ -11,7 +12,7 @@ const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
     cb(null, true);
   } else {
-    cb(new Error("Not an image! Please upload only images"), false);
+    cb(new AppError("Not an image! Please upload only images", 500), false);
   }
 };
 

@@ -14,6 +14,7 @@ import {
   resetPassword,
   protect,
   updatePassword,
+  logout,
 } from "../controller/authController.js";
 
 const router = Router();
@@ -28,6 +29,8 @@ router.patch("/resetpassword/:token", resetPassword);
 
 // Protecting all these routes for logged-in users
 router.use(protect);
+
+router.post("/logout", logout);
 
 router.get("/me", getMe);
 

@@ -79,7 +79,10 @@ const userSchema = new Schema(
       },
     },
     passwordChangedAt: Date,
-    passwordResetToken: String,
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
     passwordResetExpires: Date,
     active: {
       type: Boolean,

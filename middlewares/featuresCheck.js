@@ -1,3 +1,5 @@
+import AppError from "../utils/appError.js";
+
 const featuresCheck = (requiredFeature) => {
   return (req, _, next) => {
     const user = req.user;
@@ -5,7 +7,7 @@ const featuresCheck = (requiredFeature) => {
 
     if (!userFeatures.includes(requiredFeature)) {
       return next(
-        new Error("You do not have permission to perform this action")
+        new AppError("You do not have permission to perform this action", 403)
       );
     }
     next();
