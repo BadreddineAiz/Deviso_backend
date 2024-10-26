@@ -25,91 +25,73 @@ const app = express();
 
 connect(process.env.MONGO_URI)
     .then((response) => {
-        console.log(`MongDB Connected : ${response.connection.host}`);
+        console.log(`MongoDB Connected : ${response.connection.host}`);
     })
     .catch((error) => {
         console.log('Error in DB connection: ' + error);
     });
-//Security
-app.use(helmet()); // HTTP Headers Security
 
-// Whitelist certain IPs (e.g., internal tools, trusted IPs)
-const whitelist = [];
-
-// General API rate limiter (e.g., 100 requests per minute)
-const generalApiLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: {
-        status: 429,
-        error: 'Too many requests from this IP, please try again later.',
-    },
-    headers: true, // Add rate-limit headers to responses
-});
-
-// Intensive operation rate limiter (e.g., 20 requests per minute)
-const intensiveLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 20, // limit each IP to 20 requests per windowMs
-    message: {
-        status: 429,
-        error: 'Too many requests for this operation, please slow down.',
-    },
-    headers: true,
-    skip: (req) => whitelist.includes(req.ip), // Skip for whitelisted IPs
-});
-
-// Authentication limiter (e.g., 10 requests per minute)
-const authLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10, // limit each IP to 10 login attempts per windowMs
-    message: {
-        status: 429,
-        error: 'Too many login attempts, please try again after a minute.',
-    },
-    headers: true,
-});
-
-// Apply rate limiters
-app.use('/', generalApiLimiter); // For general API usage
-app.use('/:documentID/export(facture|bonLivraison|devis)', intensiveLimiter); // For intensive export operations
-app.use('/auth', authLimiter); // For authentication routes
-
-// Define the list of allowed origins
-
+// Security Middleware
+app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
-
-//Body Parser
-app.use(
-    json({
-        limit: '10kb', // Limit the amount of data sent to client
-    })
-);
-
-//Data Sanitization against NoSQL query injection
 app.use(mongoSanitize());
-// Data Sanitization against XSS
 app.use(xss());
-// Prevent Parameter pollution
 app.use(hpp());
 
+// Rate Limiters
+const whitelist = []; // Define whitelisted IPs here
+
+const generalApiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 100,
+    message: { status: 429, error: 'Too many requests from this IP, please try again later.' },
+    headers: true,
+});
+
+const intensiveLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    message: { status: 429, error: 'Too many requests for this operation, please slow down.' },
+    headers: true,
+    skip: (req) => whitelist.includes(req.ip),
+});
+
+const authLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    message: { status: 429, error: 'Too many login attempts, please try again after a minute.' },
+    headers: true,
+});
+
+// Apply Rate Limiters
+app.use(generalApiLimiter); // Apply to all general routes
+app.use('/api/auth', authLimiter); // Apply specifically for auth routes
+app.use('/api/:documentID/export', intensiveLimiter); // Apply to intensive routes
+
+// Parsing Middleware
+app.use(json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(urlencoded({ extended: false }));
 
+// Static Files
 app.use(express.static('./public'));
-app.use('/auth', authRouter);
-app.use('/users', userRouter);
-app.use('/devis', devisRouter);
-app.use('/facture', factureRouter);
-app.use('/client', clientRouter);
-app.use('/statistics', dashboardRouter);
 
+// Routes
+app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
+app.use('/api/devis', devisRouter);
+app.use('/api/facture', factureRouter);
+app.use('/api/client', clientRouter);
+app.use('/api/statistics', dashboardRouter);
+
+// 404 Route Handling
 app.all('*', (req, res, next) => {
     next(new AppError('This Route is not defined', 404));
 });
 
+// Error Handling Middleware
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`server started in port  ${PORT}`);
+    console.log(`Server started on port ${PORT}`);
 });
