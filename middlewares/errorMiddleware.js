@@ -6,7 +6,8 @@ const errorHandler = (err, req, res, next) => {
   err.status = err.status || "error";
 
   // Log the error for debugging purposes
-  console.error("ERROR 💥", err);
+  var fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+  console.error(`ERROR 💥 from ${fullUrl}`, err);
 
   // Send error response to the client
   res.status(err.statusCode).json({
