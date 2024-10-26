@@ -8,12 +8,14 @@ import {
   exportBonLivraison,
   uploadRapport,
   updateFacture,
+  toFactureAvoir,
 } from "../controller/factureController.js";
 
 import { protect } from "../controller/authController.js";
 import featuresCheck from "../middlewares/featuresCheck.js";
 import {
   BONLIVRAISON_READ,
+  FACTURE_AVOIR_CREATE,
   FACTURE_CREATE,
   FACTURE_DELETE,
   FACTURE_READ,
@@ -39,6 +41,12 @@ router.get(
 );
 
 router.post("/devisToFacture", featuresCheck(FACTURE_CREATE), devisToFacture);
+
+router.post(
+  "/toFactureAvoir",
+  featuresCheck(FACTURE_AVOIR_CREATE),
+  toFactureAvoir
+);
 
 router
   .route("/:documentID")

@@ -1,43 +1,20 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
-  updateMe,
-  deleteMe,
-  getMe,
-  uploadUserLogo,
-  resizeUserLogo,
-} from "../controller/userController.js";
+    updateMe,
+    getMe,
+    uploadUserLogo,
+    resizeUserLogo,
+} from '../controller/userController.js';
 
-import {
-  signUp,
-  login,
-  forgotPassword,
-  resetPassword,
-  protect,
-  updatePassword,
-  logout,
-} from "../controller/authController.js";
+import { protect } from '../controller/authController.js';
 
 const router = Router();
-
-router.post("/signup", signUp);
-
-router.post("/login", login);
-
-router.post("/forgotpassword", forgotPassword);
-
-router.patch("/resetpassword/:token", resetPassword);
 
 // Protecting all these routes for logged-in users
 router.use(protect);
 
-router.post("/logout", logout);
+router.get('/me', getMe);
 
-router.get("/me", getMe);
-
-router.patch("/updateMe", uploadUserLogo, resizeUserLogo, updateMe);
-
-router.patch("/updateMyPassword", updatePassword);
-
-router.delete("/deleteMe", deleteMe);
+router.patch('/updateMe', uploadUserLogo, resizeUserLogo, updateMe);
 
 export default router;

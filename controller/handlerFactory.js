@@ -1,10 +1,11 @@
 import asyncHandler from "express-async-handler";
 import ApiFeatures from "../utils/apiFeatures.js";
+import AppError from "../utils/appError.js";
 
 // Handler to get multiple documents with filtering, sorting, and pagination
 export function getDocuments(Model) {
   return asyncHandler(async (req, res) => {
-    const filter = { user: req.user.id };
+    const filter = { user: req.user.id, active: true };
     const features = new ApiFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
@@ -12,8 +13,10 @@ export function getDocuments(Model) {
       .paginate();
     // Execution
     const documents = await features.query;
+    const totalItems = await Model.countDocuments(filter);
     res.status(200).json({
       status: "success",
+      totalItems,
       results: documents.length,
       data: documents,
     });
@@ -29,7 +32,7 @@ export function getDocument(Model) {
       ...filter,
     });
     if (!document) {
-      return next({ status: 404, message: "Document Not Found" });
+      return next(new AppError("Document Not Found", 404));
     }
     res.status(200).json({
       status: "success",
@@ -42,7 +45,7 @@ export function getDocument(Model) {
 export function createDocument(Model) {
   return asyncHandler(async (req, res, next) => {
     if (!req.body) {
-      return next({ status: 400, message: "Please enter Document Data" });
+      return next(new AppError("Please enter Document Data", 400));
     }
     const document = await Model.create({ ...req.body, user: req.user.id });
     res.status(201).json({
@@ -65,7 +68,7 @@ export function deleteDocument(Model) {
       { new: true } // Return the updated document
     );
     if (!document) {
-      return next({ status: 404, message: "Document Not Found" });
+      return next(new AppError("Document Not Found", 404));
     }
     res.status(200).json({
       status: "success",
@@ -87,7 +90,7 @@ export function updateDocument(Model) {
       { new: true, runValidators: true }
     );
     if (!document) {
-      return next({ status: 404, message: "Document Not Found" });
+      return next(new AppError("Document Not Found", 404));
     }
     res.status(200).json({
       status: "success",

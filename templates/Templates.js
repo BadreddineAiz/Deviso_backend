@@ -1,7 +1,7 @@
-import { numberToFrench } from "../utils/helpers.js";
+import { numberToFrench } from '../utils/helpers.js';
 
 export function FactureDevisFooterTemplate(docType, docNumber) {
-  return `
+    return `
     <div style="
       position: fixed;
       bottom:30px;
@@ -24,45 +24,45 @@ export function FactureDevisFooterTemplate(docType, docNumber) {
 }
 
 export function FactureDevisTemplate({
-  docType,
-  object,
-  mainColor,
-  secondColor,
-  logo,
-  date,
-  clientName,
-  clientTel,
-  clientICE,
-  clientAddress,
-  userName,
-  userEmail,
-  docNumber,
-  articles,
-  userICE,
-  userIF,
-  userPatente,
-  userRC,
-  userCNSS,
-  userRib,
-  userTel,
-  userAddress,
-  numeroBonCommand,
+    docType,
+    object,
+    mainColor,
+    secondColor,
+    logo,
+    date,
+    clientName,
+    clientTel,
+    clientICE,
+    clientAddress,
+    userName,
+    userEmail,
+    docNumber,
+    articles,
+    userICE,
+    userIF,
+    userPatente,
+    userRC,
+    userCNSS,
+    userRib,
+    userTel,
+    userAddress,
+    numeroBonCommand,
 }) {
-  let TotalHt = articles.reduce(
-    (previous, current) => previous + current.prixHT * current.quantity,
-    0
-  );
-  let TotalTTC = articles.reduce(
-    (previous, current) =>
-      previous +
-      (current.prixHT + current.prixHT * current.tva) * current.quantity,
-    0
-  );
-  let TotalTVA = TotalTTC - TotalHt;
-  TotalHt = parseFloat(TotalHt.toFixed(2));
-  TotalTTC = parseFloat(TotalTTC.toFixed(2));
-  TotalTVA = parseFloat(TotalTVA.toFixed(2));
-  return `
+    let TotalHt = articles.reduce(
+        (previous, current) => previous + current.prixHT * current.quantity,
+        0
+    );
+    let TotalTTC = articles.reduce(
+        (previous, current) =>
+            previous +
+            (current.prixHT + current.prixHT * current.tva) * current.quantity,
+        0
+    );
+    let TotalTVA = TotalTTC - TotalHt;
+    TotalHt = parseFloat(TotalHt.toFixed(2));
+    TotalTTC = parseFloat(TotalTTC.toFixed(2));
+    TotalTVA = parseFloat(TotalTVA.toFixed(2));
+    return `
         <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -94,9 +94,9 @@ export function FactureDevisTemplate({
             height:${Math.ceil(articles.length / 20) * 100}vh;
             display: grid;
             grid-template-rows: ${
-              docType != "Bon de Livraison"
-                ? "auto auto 1fr auto auto"
-                : "auto auto 1fr auto"
+                docType != 'Bon de Livraison'
+                    ? 'auto auto 1fr auto auto'
+                    : 'auto auto 1fr auto'
             };
         }
 
@@ -112,7 +112,7 @@ export function FactureDevisTemplate({
 
         .document header {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 2fr;
             line-height: 25px;
             align-items: end;
             margin:20px;
@@ -155,7 +155,7 @@ export function FactureDevisTemplate({
 
         .doc-type{
           margin: 30px 0;
-          padding: 5px 50px;
+          padding: 5px 20px;
           background-color: var(--main-color);
           border-radius: 5px;
           color: white;
@@ -177,9 +177,9 @@ export function FactureDevisTemplate({
             padding: 5px 10px;
             display: grid;
             grid-template-columns: ${
-              docType != "Bon de Livraison"
-                ? "1fr 100px 85px 50px"
-                : "1fr 100px"
+                docType != 'Bon de Livraison'
+                    ? '1fr 100px 85px 50px'
+                    : '1fr 100px'
             };
             
             page-break-inside: avoid;
@@ -211,7 +211,20 @@ export function FactureDevisTemplate({
         section.total>div{
           border: 2px solid var(--second-color);
           padding: 10px;
+          display:grid;
+          grid-template-columns : auto auto 1fr;
+          column-gap:10px;
+          row-gap:5px;
         }
+
+        section.total .textTotal{
+            grid-column: span 3;
+        }
+        
+        section.total .price{
+          justify-self:end;
+        }
+
 
         footer {
             display: flex;
@@ -271,13 +284,13 @@ export function FactureDevisTemplate({
           Objet : <span>${object}</span>
         </h4>
         ${
-          numeroBonCommand
-            ? `
+            numeroBonCommand
+                ? `
           <h4>
             BC : <span>${numeroBonCommand}</span>
           </h4>
         `
-            : ""
+                : ''
         }
             
         <h4>
@@ -291,68 +304,104 @@ export function FactureDevisTemplate({
             <div class="designation">Designation</div>
             <div class="quantity">Quantite</div>
             ${
-              docType != "Bon de Livraison"
-                ? `<div class="prixHT">Prix HT</div>
+                docType != 'Bon de Livraison'
+                    ? `<div class="prixHT">Prix HT</div>
                   <div class="tva">TVA</div>`
-                : ""
+                    : ''
             }
             
           </div>
         </div>
         <div class="table-content">
             ${articles
-              .map((article, i) => {
-                const isPageBreak = (i + 1) % 18 == 0;
-                return `
+                .map((article, i) => {
+                    const isPageBreak = (i + 1) % 18 == 0;
+                    return `
                   <article class="row ${
-                    (i != 0) & isPageBreak ? "page-break" : ""
+                      (i != 0) & isPageBreak ? 'page-break' : ''
                   }">
                       <div class="designation">${article.designation}</div>
-                      <div class="quantity">${article.quantity}</div>
+                      <div class="quantity">${Math.abs(article.quantity)}</div>
                       ${
-                        docType != "Bon de Livraison"
-                          ? `
+                          docType != 'Bon de Livraison'
+                              ? `
                           <div class="prixHT"><span>${
-                            article.prixHT
+                              article.prixHT
                           }</span> DH</div>
                           <div class="tva"><span>${
-                            article.tva * 100
+                              article.tva * 100
                           }</span>%</div>
                       `
-                          : ""
+                              : ''
                       }
                       
                   </article>
                 `;
-              })
-              .join("")}
+                })
+                .join('')}
           
         </div>
       </main>
       ${
-        docType != "Bon de Livraison"
-          ? `
+          docType != 'Bon de Livraison'
+              ? `
         <section class="total">
           <div>
-            <div>TOTAL HT : <span>${TotalHt} DH</span></div>
-            <div>TVA : <span>${TotalTVA} DH</span></div>
-            <div>TOTAL TTC : <span>${TotalTTC} DH</span></div>
-            <div><span>${numberToFrench(TotalTTC)} Dirham</span></div>
+            <div>TOTAL HT</div><span>:</span><span class="price">${TotalHt} DH</span>
+            <div>TVA</div><span>:</span><span class="price">${TotalTVA} DH</span>
+            <div>TOTAL TTC</div><span>:</span><span class="price">${TotalTTC} DH</span>
+            <div class="textTotal"><span>${numberToFrench(
+                TotalTTC
+            )} Dirham</span></div>
           </div>
         </section>
       `
-          : ""
+              : ''
       }
       
       <footer>
-        <div class="user-ice">ICE : <span>${userICE}</span></div>
-        <div class="user-if">IF : <span>${userIF}</span></div>
-        <div class="user-patente">patente : <span>${userPatente}</span></div>
-        <div class="user-rc">RC : <span>${userRC}</span></div>
-        <div class="user-cnss">CNSS : <span>${userCNSS}</span></div>
-        <div class="user-rib">RIB : <span>${userRib}</span></div>
-        <div class="user-tel">TEL : <span>${userTel}</span></div>
-        <div class="user-address">ADDRESSE : <span>${userAddress}</span></div>
+      ${
+          userICE
+              ? `<div class="user-ice">
+            ICE : <span>${userICE}</span>
+          </div>`
+              : ''
+      }
+      ${
+          userIF
+              ? `<div class="user-if">
+        IF : <span>${userIF}</span>
+      </div>`
+              : ''
+      }
+      ${
+          userICE
+              ? `<div class="user-patente">
+            patente : <span>${userPatente}</span>
+          </div>`
+              : ''
+      }
+      ${userRC ? `<div class="user-rc">RC : <span>${userRC}</span></div>` : ''}
+      ${
+          userCNSS
+              ? `<div class="user-cnss">CNSS : <span>${userCNSS}</span></div>`
+              : ''
+      }
+      ${
+          userRib
+              ? `<div class="user-rib">RIB : <span>${userRib}</span></div>`
+              : ''
+      }
+      ${
+          userTel
+              ? `<div class="user-tel">TEL : <span>${userTel}</span></div>`
+              : ''
+      }
+      ${
+          userAddress
+              ? `<div class="user-address">ADDRESSE : <span>${userAddress}</span></div>`
+              : ''
+      }
       </footer>
     </div>
   </body>

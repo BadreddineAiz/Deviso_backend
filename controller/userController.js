@@ -19,6 +19,7 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
+  limits: { fileSize: 3 * 1024 * 1024 },
 });
 
 export const uploadUserLogo = upload.single("logo");
@@ -63,7 +64,22 @@ export const updateMe = asyncHandler(async (req, res) => {
     });
   }
 
-  const filteredBody = filterObj(req.body, "name", "email");
+  const filteredBody = filterObj(
+    req.body,
+    "name",
+    "email",
+    "ice",
+    "if",
+    "patente",
+    "rc",
+    "cnss",
+    "rib",
+    "tel",
+    "address",
+    "mainColor",
+    "secondColor",
+    "logo"
+  );
   if (req.file) filteredBody.logo = req.file.filename;
 
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {

@@ -23,7 +23,6 @@ const createAndSendToken = (user, res) => {
     sameSite: "Strict",
     httpOnly: true,
   };
-  if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
 
   res.cookie("jwt", token, cookieOptions);
   user.password = undefined;
@@ -66,6 +65,15 @@ export const login = asyncHandler(async (req, res, next) => {
     return next(new AppError("Incorrect email or password", 401));
   }
 
+  if (user.licenseExpire < new Date()) {
+    return next(
+      new AppError(
+        "Your license has expired. Please renew your subscription or contact support for assistance.",
+        401
+      )
+    );
+  }
+
   createAndSendToken(user, res);
 });
 
@@ -73,6 +81,49 @@ export const logout = (req, res) => {
   res.clearCookie("jwt");
   res.sendStatus(200);
 };
+
+export const refreshToken = asyncHandler(async (req, res, next) => {
+  const token = req.cookies.jwt; // Retrieve token from cookies
+
+  if (!token) {
+    return next(new AppError("Not authenticated", 401));
+  }
+
+  try {
+    const decoded = await promisify(jsonwebtoken.verify)(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next(new AppError("User no longer exists", 401));
+    }
+
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next(
+        new AppError(
+          "User recently changed password! Please log in again.",
+          401
+        )
+      );
+    }
+
+    if (currentUser.licenseExpire < new Date()) {
+      return next(
+        new AppError(
+          "Your license has expired. Please renew your subscription or contact support for assistance.",
+          401
+        )
+      );
+    }
+
+    // If token is valid, send user data back to the frontend
+    res.status(200).json({ status: "success", user: currentUser });
+  } catch (err) {
+    return next(new AppError("Invalid token", 401));
+  }
+});
 
 export const protect = asyncHandler(async (req, _res, next) => {
   // Verify if the token exists
@@ -118,6 +169,16 @@ export const protect = asyncHandler(async (req, _res, next) => {
       new AppError("User recently changed password! Please log in again.", 401)
     );
   }
+
+  if (currentUser.licenseExpire < new Date()) {
+    return next(
+      new AppError(
+        "Your license has expired. Please renew your subscription or contact support for assistance.",
+        401
+      )
+    );
+  }
+
   req.user = currentUser;
   if (currentUser.adminUser) {
     req.adminUser = await User.findById(currentUser.adminUser);
@@ -155,11 +216,13 @@ export const forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) Send the token to the user's email
-  const resetURL = `${req.protocol}://${req.get(
-    "host"
-  )}/api/user/resetpassword/${resetToken}`;
+  // const resetURL = `${req.protocol}://${req.get(
+  //   "host"
+  // )}/api/user/resetpassword/${resetToken}`;
 
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email.`;
+  // const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email.`;
+
+  const message = `Deviso code de réinitialisation de mot de passe: ${resetToken}\nSi vous n'avez pas oublié votre mot de passe, veuillez ignorer cet e-mail.`;
 
   try {
     await sendEmail({
@@ -204,6 +267,7 @@ export const resetPassword = asyncHandler(async (req, res, next) => {
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
+  await user.save();
 
   // 3) Log this user in
   createAndSendToken(user, res);

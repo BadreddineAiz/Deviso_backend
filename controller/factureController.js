@@ -4,9 +4,8 @@ import { promises as fs } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
-import { getDocuments, getDocument } from "./handlerFactory.js";
+import { getDocument } from "./handlerFactory.js";
 import Facture from "../model/factureModel.js";
-import Devis from "../model/devisModel.js";
 import {
   FactureDevisFooterTemplate,
   FactureDevisTemplate,
@@ -15,6 +14,8 @@ import { format } from "date-fns";
 import { fetchImageAsBase64, filterObj } from "../utils/helpers.js";
 import multer from "multer";
 import AppError from "../utils/appError.js";
+import ApiFeatures from "../utils/apiFeatures.js";
+import Devis from "../model/devisModel.js";
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -36,17 +37,37 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 export const uploadRapport = upload.single("rapport");
 
 export const getFacture = getDocument(Facture);
-export const getFactures = getDocuments(Facture);
+export const getFactures = asyncHandler(async (req, res) => {
+  const filter = { user: req.user.id, active: true };
+  req.query.sort = "-createdAt";
+  const features = new ApiFeatures(
+    Facture.find(filter).populate("client"),
+    req.query
+  )
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  // Execution
+  const documents = await features.query;
+  const totalItems = await Facture.countDocuments(filter);
+  res.status(200).json({
+    status: "success",
+    totalItems,
+    results: documents.length,
+    data: documents,
+  });
+});
 
 export const updateFacture = asyncHandler(async (req, res) => {
   const filter = { user: req.user.id };
-  const filtredBody = {};
-
+  const filtredBody = filterObj(req.body, "payer");
   if (req.file) filtredBody.rapport = req.file.filename;
 
   const facture = await Facture.findOneAndUpdate(
@@ -88,22 +109,28 @@ export const devisToFacture = asyncHandler(async (req, res) => {
     });
   }
 
-  const hasAFacture = await Facture.findOne({
-    user: req.user.id,
-    devis: devis._id,
-  });
-
-  if (hasAFacture) {
+  if (devis.facture) {
     return res.status(400).json({
       status: "fail",
       message: `This Devis ${req.body.devis} has already been transformed to a facture`,
     });
   }
 
+  const totalAmount = devis.articles.reduce(
+    (prev, curr) =>
+      prev + (curr.prixHT + curr.prixHT * curr.tva) * curr.quantity,
+    0
+  );
+
   const facture = await Facture.create({
     client: devis.client,
     devis: devis._id,
     user: req.user.id,
+    articles: devis.articles,
+    bonCommand: devis.bonCommand,
+    numeroBonCommand: devis.numeroBonCommand,
+    object: devis.object,
+    totalAmount,
   });
 
   devis.facture = facture._id;
@@ -115,13 +142,99 @@ export const devisToFacture = asyncHandler(async (req, res) => {
   });
 });
 
+export const toFactureAvoir = asyncHandler(async (req, res) => {
+  if (!req.body.facture) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Please enter Facture",
+    });
+  }
+
+  const facture = await Facture.findOne({
+    user: req.user.id,
+    _id: req.body.facture,
+  });
+
+  if (!facture) {
+    return res.status(404).json({
+      status: "fail",
+      message: `This Facture ${req.body.facture} doesn't exist`,
+    });
+  }
+
+  if (facture.refFacture.id) {
+    return res.status(400).json({
+      status: "fail",
+      message: `Cette Facture a été deja transformé en facture avoir`,
+    });
+  }
+
+  if (!facture.payer) {
+    return res.status(400).json({
+      status: "fail",
+      message: `Cette Facture n'est pas payer`,
+    });
+  }
+
+  const { articlesToRefund } = req.body;
+
+  // 2. Calculate the total amount of the avoir (credit note)
+  let totalAvoirAmount = 0;
+
+  const avoirArticles = facture.articles
+    .map((article) => {
+      const refundArticle = articlesToRefund.find(
+        (a) => a.designation === article.designation
+      );
+
+      if (refundArticle) {
+        // Calculate the refund amount based on the quantity to refund
+        const refundQuantity = Math.min(
+          refundArticle.quantity,
+          article.quantity
+        ); // Ensure we don't refund more than originally bought
+        const refundAmount =
+          refundQuantity * (article.prixHT + article.prixHT * article.tva);
+
+        totalAvoirAmount += refundAmount;
+
+        return {
+          designation: article.designation,
+          quantity: -refundQuantity, // Negative quantity for avoir
+          prixHT: article.prixHT,
+          tva: article.tva,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean); // Remove null values for articles that are not being refunded
+
+  const factureAvoir = await Facture.create({
+    client: facture.client,
+    devis: facture.devis,
+    refFacture: { id: facture._id, numero: facture.numero },
+    user: req.user.id,
+    articles: avoirArticles,
+    bonCommand: facture.bonCommand,
+    numeroBonCommand: facture.numeroBonCommand,
+    object: facture.object,
+    isAvoir: true,
+    totalAmount: -totalAvoirAmount, // The total amount is negative for a credit note
+  });
+
+  res.status(200).json({
+    status: "success",
+    data: factureAvoir,
+  });
+});
+
 export const exportFacture = asyncHandler(async (req, res) => {
   const facture = await Facture.findOne({
     user: req.user.id,
     _id: req.params.documentID,
   })
     .populate("user")
-    .populate("devis")
     .populate("client");
 
   if (!facture) {
@@ -132,10 +245,8 @@ export const exportFacture = asyncHandler(async (req, res) => {
   }
 
   const user = facture.user;
-  const devis = facture.devis;
   const client = facture.client;
 
-  const docType = "Facture";
   const mainColor = user.mainColor ?? "#161D6F";
   const secondColor = user.secondColor ?? "#98DED9";
   const PORT = process.env.PORT || 5000;
@@ -149,8 +260,7 @@ export const exportFacture = asyncHandler(async (req, res) => {
   const userName = user.name;
   const userEmail = user.email;
   const date = format(facture.createdAt, "dd/MM/yyyy");
-  const docNumber = `FCT-${facture.createdAt.getFullYear()}-${devis.numero}`;
-  const articles = devis.articles;
+  const articles = facture.articles;
   const userICE = user.ice;
   const userIF = user.if;
   const userPatente = user.patente;
@@ -159,8 +269,13 @@ export const exportFacture = asyncHandler(async (req, res) => {
   const userRib = user.rib;
   const userTel = user.tel;
   const userAddress = user.address;
-  const { numeroBonCommand } = devis;
-  const object = devis.object;
+  const { numeroBonCommand } = facture;
+  const object = facture.object;
+  const { isAvoir } = facture;
+  const docType = isAvoir ? "Facture Avoir" : "Facture";
+  const docNumber = `${
+    isAvoir ? "AVR" : "FCT"
+  }-${facture.createdAt.getFullYear()}-${facture.numero}`;
 
   const htmlContent = FactureDevisTemplate({
     docType,
@@ -263,7 +378,6 @@ export const exportBonLivraison = asyncHandler(async (req, res) => {
     _id: req.params.documentID,
   })
     .populate("user")
-    .populate("devis")
     .populate("client");
 
   if (!facture) {
@@ -274,7 +388,6 @@ export const exportBonLivraison = asyncHandler(async (req, res) => {
   }
 
   const user = facture.user;
-  const devis = facture.devis;
   const client = facture.client;
 
   const docType = "Bon de Livraison";
@@ -291,8 +404,8 @@ export const exportBonLivraison = asyncHandler(async (req, res) => {
   const userName = user.name;
   const userEmail = user.email;
   const date = format(facture.createdAt, "dd/MM/yyyy");
-  const docNumber = `BL-${facture.createdAt.getFullYear()}-${devis.numero}`;
-  const articles = devis.articles;
+  const docNumber = `BL-${facture.createdAt.getFullYear()}-${facture.numero}`;
+  const articles = facture.articles;
   const userICE = user.ice;
   const userIF = user.if;
   const userPatente = user.patente;
@@ -301,8 +414,8 @@ export const exportBonLivraison = asyncHandler(async (req, res) => {
   const userRib = user.rib;
   const userTel = user.tel;
   const userAddress = user.address;
-  const { numeroBonCommand } = devis;
-  const object = devis.object;
+  const { numeroBonCommand } = facture;
+  const object = facture.object;
 
   const htmlContent = FactureDevisTemplate({
     docType,

@@ -15,6 +15,7 @@ import { fetchImageAsBase64, filterObj } from "../utils/helpers.js";
 import Client from "../model/clientModel.js";
 import multer from "multer";
 import AppError from "../utils/appError.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -36,12 +37,33 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 export const uploadBonCommand = upload.single("bonCommand");
 
 export const getDevis = getDocument(Devis);
-export const getDeviss = getDocuments(Devis);
+export const getDeviss = asyncHandler(async (req, res) => {
+  const filter = { user: req.user.id, active: true };
+  req.query.sort = "-createdAt";
+  const features = new ApiFeatures(
+    Devis.find(filter).populate("client"),
+    req.query
+  )
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  // Execution
+  const documents = await features.query;
+  const totalItems = await Devis.countDocuments(filter);
+  res.status(200).json({
+    status: "success",
+    totalItems,
+    results: documents.length,
+    data: documents,
+  });
+});
 
 export const createDevis = asyncHandler(async (req, res) => {
   if (!req.body) {
@@ -75,13 +97,20 @@ export const createDevis = asyncHandler(async (req, res) => {
 
 export const updateDevis = asyncHandler(async (req, res) => {
   const filter = { user: req.user.id };
-  const filtredBody = filterObj(req.body, "articles", "numeroBonCommand");
+  if (!req.body.articles) req.body.articles = [];
+  const filtredBody = filterObj(
+    req.body,
+    "object",
+    "articles",
+    "numeroBonCommand"
+  );
 
   if (req.file) filtredBody.bonCommand = req.file.filename;
 
   const devis = await Devis.findOneAndUpdate(
     {
       _id: req.params.documentID,
+      facture: null,
       ...filter,
     },
     filtredBody,
@@ -91,7 +120,7 @@ export const updateDevis = asyncHandler(async (req, res) => {
   if (!devis) {
     return res.status(404).json({
       status: "fail",
-      message: "Devis Not Found",
+      message: "Devis Not Found or Has been already transformed to Facture",
     });
   }
 
@@ -101,7 +130,24 @@ export const updateDevis = asyncHandler(async (req, res) => {
   });
 });
 
-export const deleteDevis = deleteDocument(Devis);
+export const deleteDevis = asyncHandler(async (req, res, next) => {
+  const filter = { user: req.user.id, facture: null };
+  const document = await Devis.findOneAndUpdate(
+    {
+      _id: req.params.documentID,
+      ...filter,
+    },
+    { active: false },
+    { new: true } // Return the updated document
+  );
+  if (!document) {
+    return next(new AppError("Document Not Found", 404));
+  }
+  res.status(200).json({
+    status: "success",
+    data: null,
+  });
+});
 
 export const exportDevis = asyncHandler(async (req, res) => {
   const devis = await Devis.findOne({

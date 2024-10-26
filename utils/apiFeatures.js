@@ -7,16 +7,21 @@ class ApiFeatures {
   filter() {
     let queryObj = { ...this.queryString };
 
-    const queryStr = JSON.stringify(queryObj).replace(
-      /\b(gt|gte|lt|lte|eq|ne)\b/g,
-      (match) => `$${match}`
-    );
+    const queryStr = JSON.stringify(queryObj)
+      .replace(/\b(gt|gte|lt|lte|eq|ne)\b"/g, (match) => `$${match}`)
+      .replace("sw", "$regex");
 
     queryObj = JSON.parse(queryStr);
 
     const excludedFields = ["page", "sort", "limit", "fields"];
 
     excludedFields.forEach((el) => delete queryObj[el]);
+
+    Object.keys(queryObj).forEach((key) => {
+      if (queryObj[key].$regex) {
+        queryObj[key] = { $regex: `^${queryObj[key].$regex}`, $options: "i" }; // Add case-insensitivity
+      }
+    });
 
     this.query.find(queryObj);
 
@@ -35,7 +40,6 @@ class ApiFeatures {
   limitFields() {
     if (this.queryString.fields) {
       const fields = this.queryString.fields;
-      console.log(fields);
       this.query.select(fields.replace(",", " "));
     } else {
       this.query.select("-__v");
