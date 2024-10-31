@@ -276,7 +276,6 @@ export function FactureDevisTemplate({
         </fieldset>
         <div class="user-info">
           <h2 class="user-name">${userName}</h2>
-          <div class="user-email">${userEmail}</div>
         </div>
       </header>
       <div class="doc-type">
@@ -402,6 +401,7 @@ export function FactureDevisTemplate({
               ? `<div class="user-address">ADDRESSE : <span>${userAddress}</span></div>`
               : ''
       }
+        <div class="user-email">${userEmail}</div>
       </footer>
     </div>
   </body>
