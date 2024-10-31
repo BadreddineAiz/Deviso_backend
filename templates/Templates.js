@@ -119,7 +119,7 @@ export function FactureDevisTemplate({
         }
 
         header .logo {
-            width: 130px;
+            height: 130px;
             padding: 20px;
             margin-left: 10px;
             // border-radius: 50%;
