@@ -122,7 +122,7 @@ export function FactureDevisTemplate({
             width: 130px;
             padding: 20px;
             margin-left: 10px;
-            border-radius: 50%;
+            // border-radius: 50%;
         }
 
         header .client-info {
