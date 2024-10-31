@@ -401,7 +401,7 @@ export function FactureDevisTemplate({
               ? `<div class="user-address">ADDRESSE : <span>${userAddress}</span></div>`
               : ''
       }
-        <div class="user-email">${userEmail}</div>
+        <div class="user-email">Email : <span>${userEmail}</span></div>
       </footer>
     </div>
   </body>
