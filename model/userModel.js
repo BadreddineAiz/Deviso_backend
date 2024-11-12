@@ -79,8 +79,9 @@ const userSchema = new Schema(
         },
         licenseExpire: {
             type: Date,
-            default: addDays(new Date(), 7),
+            default: () => addDays(new Date(), 7),
         },
+
         active: {
             type: Boolean,
             default: true,
