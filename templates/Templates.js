@@ -116,13 +116,11 @@ export function FactureDevisTemplate({
             line-height: 25px;
             align-items: end;
             margin:20px;
+            gap:15px
         }
 
         header .logo {
-            width: 130px;
-            padding: 20px;
-            margin-left: 10px;
-            border-radius: 50%;
+            height: 120px;
         }
 
         header .client-info {
@@ -151,6 +149,12 @@ export function FactureDevisTemplate({
             content: ":";
             position: absolute;
             right: -10px;
+        }
+
+        .user-info{
+          .user-name{
+            text-transform: uppercase;
+          }
         }
 
         .doc-type{
