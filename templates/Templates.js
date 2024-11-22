@@ -138,11 +138,13 @@ export function FactureDevisTemplate({
             border-radius: 5px;
             padding: 5px;
             background-color: var(--second-color);
-            color: var(--main-color);
+            color: white;
         }
 
         .client-info div {
             position: relative;
+            font-weight:bold;
+            color: var(--second-color);
         }
 
         .client-info div::after {
@@ -173,8 +175,9 @@ export function FactureDevisTemplate({
 
         .table-head .row {
             background-color: var(--second-color);
-            color: var(--main-color);
+            color: white;
             border-radius: 5px;
+            font-weight:bold;
         }
 
         .row {
@@ -241,7 +244,6 @@ export function FactureDevisTemplate({
         }
 
         footer div span , section.total div span {
-            font-weight: normal;
             color: var(--main-color);
         }
         
