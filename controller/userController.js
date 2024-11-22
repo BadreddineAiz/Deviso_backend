@@ -47,7 +47,7 @@ export const resizeUserLogo = async (req, res, next) => {
 
         // Process and overwrite the image
         await sharp(req.file.buffer)
-            // .resize(500, 500)
+            .resize(500, 500)
             .toFormat('jpeg')
             .jpeg({ quality: 90 })
             .toFile(outputPath);
