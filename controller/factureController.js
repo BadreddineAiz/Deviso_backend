@@ -18,6 +18,7 @@ import ApiFeatures from '../utils/apiFeatures.js';
 import Devis from '../model/devisModel.js';
 import Product from '../model/ProductModel.js';
 import mongoose from 'mongoose';
+import { UserFilter } from '../data/FeaturesList.js';
 
 const multerStorage = multer.diskStorage({
     destination: async (req, file, cb) => {
@@ -61,7 +62,7 @@ const upload = multer({
 
 export const uploadRapport = upload.single('rapport');
 
-export const getFacture = getDocument(Facture);
+export const getFacture = getDocument(Facture, UserFilter);
 export const getFactures = asyncHandler(async (req, res) => {
     const filter = { user: req.user.id, active: true };
     req.query.sort = '-createdAt';

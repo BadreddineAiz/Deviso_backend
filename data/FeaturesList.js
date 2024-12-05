@@ -45,4 +45,8 @@ export const DefaultFeatures = [
     PRODUCT_DELETE,
 ];
 
+export const UserFilter = (req) => {
+    return { user: req.user.id };
+};
+
 export const AllFeatures = [...DefaultFeatures];

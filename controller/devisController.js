@@ -18,6 +18,7 @@ import Client from '../model/clientModel.js';
 import multer from 'multer';
 import AppError from '../utils/appError.js';
 import ApiFeatures from '../utils/apiFeatures.js';
+import { UserFilter } from '../data/FeaturesList.js';
 
 const multerStorage = multer.diskStorage({
     destination: async (req, file, cb) => {
@@ -65,7 +66,7 @@ const upload = multer({
 
 export const uploadBonCommand = upload.single('bonCommand');
 
-export const getDevis = getDocument(Devis);
+export const getDevis = getDocument(Devis, UserFilter);
 export const getDeviss = asyncHandler(async (req, res) => {
     const filter = { user: req.user.id, active: true };
     req.query.sort = '-createdAt';
