@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 
 import authRouter from './routes/authRouter.js';
 import userRouter from './routes/userRouter.js';
+import productRouter from './routes/ProductRouter.js';
 import clientRouter from './routes/ClientRouter.js';
 import factureRouter from './routes/FactureRouter.js';
 import devisRouter from './routes/DevisRouter.js';
@@ -94,6 +95,7 @@ app.use('/api/users', userRouter);
 app.use('/api/devis', devisRouter);
 app.use('/api/facture', factureRouter);
 app.use('/api/client', clientRouter);
+app.use('/api/product', productRouter);
 app.use('/api/statistics', dashboardRouter);
 
 // 404 Route Handling
