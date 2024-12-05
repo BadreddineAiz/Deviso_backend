@@ -6,6 +6,9 @@ const productSchema = new Schema(
             type: String,
             required: [true, 'Please add Designation'],
         },
+        barCode: {
+            type: String,
+        },
         quantity: {
             type: Number,
             default: 0,

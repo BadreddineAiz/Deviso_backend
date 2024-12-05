@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import { launch } from 'puppeteer';
 import { promises as fs } from 'fs';
-import { dirname, join } from 'path';
+import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { getDocument } from './handlerFactory.js';
@@ -20,11 +20,28 @@ import Product from '../model/ProductModel.js';
 import mongoose from 'mongoose';
 
 const multerStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/rapports');
+    destination: async (req, file, cb) => {
+        const userFolder = path.join(
+            'public',
+            req.user.id.toString(),
+            'rapports'
+        );
+
+        // Create user-specific folder if it doesn't exist
+        try {
+            await fs.mkdir(userFolder, { recursive: true }); // Async/await for clarity
+            console.log('Folder created:', userFolder);
+            cb(null, userFolder);
+        } catch (err) {
+            console.error('Error creating directory:', err);
+            cb(new Error('Failed to create folder'));
+        }
     },
     filename: (req, file, cb) => {
-        cb(null, `rapport-${req.user.id}-${Date.now()}.pdf`);
+        const filename = `rapport-${req.user.id}-${Date.now()}.pdf`;
+        file.fullPath = path.join(req.user.id.toString(), 'rapports', filename);
+        console.log('File path set:', file.fullPath);
+        cb(null, filename);
     },
 });
 
@@ -70,7 +87,7 @@ export const getFactures = asyncHandler(async (req, res) => {
 export const updateFacture = asyncHandler(async (req, res) => {
     const filter = { user: req.user.id };
     const filtredBody = filterObj(req.body, 'payer');
-    if (req.file) filtredBody.rapport = req.file.filename;
+    if (req.file) filtredBody.rapport = req.file.fullPath;
 
     const facture = await Facture.findOneAndUpdate(
         {

@@ -4,7 +4,8 @@ import { promises as fs } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
-import { getDocuments, getDocument, deleteDocument } from './handlerFactory.js';
+import path from 'path';
+import { getDocument } from './handlerFactory.js';
 import Devis from '../model/devisModel.js';
 import {
     FactureDevisFooterTemplate,
@@ -19,11 +20,32 @@ import AppError from '../utils/appError.js';
 import ApiFeatures from '../utils/apiFeatures.js';
 
 const multerStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'public/bonCommands');
+    destination: async (req, file, cb) => {
+        const userFolder = path.join(
+            'public',
+            req.user.id.toString(),
+            'bonCommands'
+        );
+
+        // Create user-specific folder if it doesn't exist
+        try {
+            await fs.mkdir(userFolder, { recursive: true }); // Async/await for clarity
+            console.log('Folder created:', userFolder);
+            cb(null, userFolder);
+        } catch (err) {
+            console.error('Error creating directory:', err);
+            cb(new Error('Failed to create folder'));
+        }
     },
     filename: (req, file, cb) => {
-        cb(null, `bonCommand-${req.user.id}-${Date.now()}.pdf`);
+        const filename = `bonCommand-${req.user.id}-${Date.now()}.pdf`;
+        file.fullPath = path.join(
+            req.user.id.toString(),
+            'bonCommands',
+            filename
+        );
+        console.log('File path set:', file.fullPath);
+        cb(null, filename);
     },
 });
 
@@ -83,7 +105,7 @@ export const createDevis = asyncHandler(async (req, res, next) => {
         return next(new AppError('Client Not Found', 404));
     }
 
-    if (req.file) req.body.bonCommand = req.file.filename;
+    if (req.file) req.body.bonCommand = req.file.fullPath;
 
     const articlesProducts = req.body.articles.filter(
         (artc) => artc.type == 'product'
@@ -125,7 +147,7 @@ export const updateDevis = asyncHandler(async (req, res, next) => {
         'numeroBonCommand'
     );
 
-    if (req.file) filtredBody.bonCommand = req.file.filename;
+    if (req.file) filtredBody.bonCommand = req.file.fullPath;
 
     const articlesProducts = req.body.articles.filter(
         (artc) => artc.type == 'product'
