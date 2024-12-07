@@ -10,13 +10,21 @@ import Product from '../model/ProductModel.js';
 import { generateNumericBarcode } from '../utils/helpers.js';
 import { UserFilter } from '../data/FeaturesList.js';
 
+const ApproFilter = (req) => {
+    return {
+        user: req.user.id,
+        $expr: { $lte: ['$quantity', '$minimalQuantity'] },
+    };
+};
+
 export const getProduct = getDocument(Product, UserFilter);
 export const getProducts = getDocuments(Product, UserFilter);
+export const getApproProducts = getDocuments(Product, ApproFilter);
 export const createProduct = createDocument(Product, (req) => {
-    const barCode = req.body.barCode?.trim().length
-        ? req.body.barCode
+    const barcode = req.body.barcode?.trim().length
+        ? req.body.barcode
         : generateNumericBarcode();
-    const AdditionalData = { user: req.user.id, barCode };
+    const AdditionalData = { user: req.user.id, barcode };
     if (req.file) AdditionalData.image = req.file.filePath;
 
     return AdditionalData;

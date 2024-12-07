@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import { launch } from 'puppeteer';
 import { promises as fs } from 'fs';
-import path from 'path';
+import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 import { getDocument } from './handlerFactory.js';
@@ -19,6 +19,7 @@ import Devis from '../model/devisModel.js';
 import Product from '../model/ProductModel.js';
 import mongoose from 'mongoose';
 import { UserFilter } from '../data/FeaturesList.js';
+import { join } from 'path';
 
 const multerStorage = multer.diskStorage({
     destination: async (req, file, cb) => {
@@ -170,10 +171,10 @@ export const devisToFacture = asyncHandler(async (req, res, next) => {
             product.quantity -= article.quantity;
             await product.save({ session });
         }
-
         // Calculate total amount with error handling
         const totalAmount = devis.articles.reduce((prev, curr) => {
-            if (!curr.prixHT || !curr.tva || !curr.quantity) {
+            if (!curr.prixHT || curr.tva == undefined || !curr.quantity) {
+                console.log(curr.prixHT, curr.tva, curr.quantity);
                 throw new AppError('Invalid article pricing information', 400);
             }
             return (
@@ -260,42 +261,42 @@ export const toFactureAvoir = asyncHandler(async (req, res) => {
     // 2. Calculate the total amount of the avoir (credit note)
     let totalAvoirAmount = 0;
 
-    const avoirArticles = facture.articles
-        .map(async (article) => {
-            const refundArticle = articlesToRefund.find(
-                (a) => a.designation === article.designation
-            );
+    const avoirArticles = [];
+    for (const article of facture.articles) {
+        const refundArticle = articlesToRefund.find(
+            (a) => a.designation === article.designation
+        );
 
-            if (refundArticle) {
-                // Calculate the refund amount based on the quantity to refund
-                const refundQuantity = Math.min(
-                    refundArticle.quantity,
-                    article.quantity
-                ); // Ensure we don't refund more than originally bought
-                const refundAmount =
-                    refundQuantity *
-                    (article.prixHT + article.prixHT * article.tva);
+        if (!refundArticle) continue;
 
-                totalAvoirAmount += refundAmount;
+        // Calculate the refund amount based on the quantity to refund
+        const refundQuantity = Math.min(
+            refundArticle.quantity,
+            article.quantity
+        ); // Ensure we don't refund more than originally bought
+        const refundAmount =
+            refundQuantity * (article.prixHT + article.prixHT * article.tva);
 
-                if (article.type == 'product') {
-                    const product = await Product.findOne({
-                        user: req.user.id,
-                        _id: article.productID,
-                    });
-                    product.quantity += refundQuantity;
-                }
-                return {
-                    designation: article.designation,
-                    quantity: -refundQuantity, // Negative quantity for avoir
-                    prixHT: article.prixHT,
-                    tva: article.tva,
-                };
+        totalAvoirAmount += refundAmount;
+
+        if (article.type === 'product') {
+            const product = await Product.findOne({
+                user: req.user.id,
+                _id: article.productID,
+            });
+            if (product) {
+                product.quantity += refundQuantity;
+                await product.save(); // Ensure the updated quantity is saved to the database
             }
+        }
 
-            return null;
-        })
-        .filter(Boolean); // Remove null values for articles that are not being refunded
+        avoirArticles.push({
+            designation: article.designation,
+            quantity: -refundQuantity, // Negative quantity for avoir
+            prixHT: article.prixHT,
+            tva: article.tva,
+        });
+    }
 
     const factureAvoir = await Facture.create({
         client: facture.client,
@@ -338,7 +339,7 @@ export const exportFacture = asyncHandler(async (req, res) => {
     const secondColor = user.secondColor ?? '#98DED9';
     const PORT = process.env.PORT || 5000;
     const logo = await fetchImageAsBase64(
-        `${req.protocol}://${req.hostname}:${PORT}/images/users/${user.logo}`
+        `${req.protocol}://${req.hostname}:${PORT}/${user.logo}`
     );
     const clientName = client.name;
     const clientTel = client.tel;
@@ -482,7 +483,7 @@ export const exportBonLivraison = asyncHandler(async (req, res) => {
     const secondColor = user.secondColor ?? '#98DED9';
     const PORT = process.env.PORT || 5000;
     const logo = await fetchImageAsBase64(
-        `${req.protocol}://${req.hostname}:${PORT}/images/users/${user.logo}`
+        `${req.protocol}://${req.hostname}:${PORT}/${user.logo}`
     );
     const clientName = client.name;
     const clientTel = client.tel;

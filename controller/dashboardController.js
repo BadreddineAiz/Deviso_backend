@@ -3,6 +3,7 @@ import Client from '../model/clientModel.js';
 import Facture from '../model/factureModel.js';
 import Devis from '../model/devisModel.js';
 import mongoose from 'mongoose';
+import Product from '../model/ProductModel.js';
 
 export const getDashboardStats = expressAsyncHandler(async (req, res) => {
     const years = parseInt(req.query.years) || 0;
@@ -14,6 +15,13 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
     const filter = { user: req.user.id, active: true };
 
     const totalClients = await Client.countDocuments(filter);
+
+    const numberProducts = await Product.countDocuments(filter);
+
+    const numberApproProducts = await Product.countDocuments({
+        ...filter,
+        $expr: { $lte: ['$quantity', '$minimalQuantity'] },
+    });
 
     const unpaidFactures = await Facture.countDocuments({
         ...filter,
@@ -49,10 +57,6 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
         },
         {
             $group: {
-                // _id: {
-                //   year: { $year: "$createdAt" }, // Group by year
-                //   month: { $month: "$createdAt" }, // Group by month
-                // },
                 _id: { $month: '$createdAt' },
                 total: { $sum: '$totalAmount' },
             },
@@ -77,6 +81,8 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
             totalClients,
             totalDevis,
             totalFactures,
+            numberProducts,
+            numberApproProducts,
             paidFactures,
             unpaidFactures,
             deadlineFactures,

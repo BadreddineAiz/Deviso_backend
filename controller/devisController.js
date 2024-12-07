@@ -112,14 +112,16 @@ export const createDevis = asyncHandler(async (req, res, next) => {
         (artc) => artc.type == 'product'
     );
 
-    articlesProducts.forEach(async (article) => {
+    for (const article of articlesProducts) {
         const product = await Product.findOne({
             user: req.user.id,
             _id: article.productID,
         });
+
         if (!product) {
             return next(new AppError('Product Not Found', 404));
         }
+
         if (article.quantity > product.quantity) {
             return next(
                 new AppError(
@@ -128,7 +130,7 @@ export const createDevis = asyncHandler(async (req, res, next) => {
                 )
             );
         }
-    });
+    }
 
     const devis = await Devis.create({ ...req.body, user: req.user.id });
 
@@ -236,7 +238,7 @@ export const exportDevis = asyncHandler(async (req, res, next) => {
     const secondColor = user.secondColor;
     const PORT = process.env.PORT || 5000;
     const logo = await fetchImageAsBase64(
-        `${req.protocol}://${req.hostname}:${PORT}/images/users/${user.logo}`
+        `${req.protocol}://${req.hostname}:${PORT}/${user.logo}`
     );
     const clientName = client.name;
     const clientTel = client.tel;

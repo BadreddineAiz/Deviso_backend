@@ -6,10 +6,11 @@ import { filterObj } from '../utils/helpers.js';
 // Handler to get multiple documents with filtering, sorting, and pagination
 export function getDocuments(Model, createViewFilter) {
     return asyncHandler(async (req, res) => {
-        let filter = {};
+        let filter = { active: true };
         if (createViewFilter) {
-            filter = createViewFilter(req);
+            filter = { ...filter, ...createViewFilter(req) };
         }
+        console.log(filter);
         const features = new ApiFeatures(Model.find(filter), req.query)
             .filter()
             .sort()
@@ -30,9 +31,9 @@ export function getDocuments(Model, createViewFilter) {
 // Handler to get a single document by ID
 export function getDocument(Model, createViewFilter) {
     return asyncHandler(async (req, res, next) => {
-        let filter = {};
+        let filter = { active: true };
         if (createViewFilter) {
-            filter = createViewFilter(req);
+            filter = { ...filter, ...createViewFilter(req) };
         }
         const document = await Model.findOne({
             _id: req.params.documentID,
@@ -97,9 +98,9 @@ export function createDocument(
 // Handler to delete a document by ID (soft delete)
 export function deleteDocument(Model, createViewFilter) {
     return asyncHandler(async (req, res, next) => {
-        let filter = {};
+        let filter = { active: true };
         if (createViewFilter) {
-            filter = createViewFilter(req);
+            filter = { ...filter, ...createViewFilter(req) };
         }
         const document = await Model.findOneAndUpdate(
             {
@@ -129,9 +130,9 @@ export function updateDocument(
     createAdditionalData
 ) {
     return asyncHandler(async (req, res, next) => {
-        let filter = {};
+        let filter = { active: true };
         if (createViewFilter) {
-            filter = createViewFilter(req);
+            filter = { ...filter, ...createViewFilter(req) };
         }
         const AdditionalData = createAdditionalData
             ? createAdditionalData(req)

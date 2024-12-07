@@ -11,7 +11,7 @@ const productSchema = new Schema(
             type: String,
             required: [true, 'Please add Designation'],
         },
-        barCode: {
+        barcode: {
             type: String,
         },
         quantity: {
@@ -23,6 +23,10 @@ const productSchema = new Schema(
                 },
                 message: 'La quantité doit être inférieure ou égale à 0.',
             },
+        },
+        minimalQuantity: {
+            type: Number,
+            default: 0,
         },
         prixHT: {
             type: Number,
@@ -43,6 +47,11 @@ const productSchema = new Schema(
         timestamps: true, // Adds createdAt and updatedAt fields
     }
 );
+
+productSchema.pre(/^find/, function (next) {
+    this.find({ active: true });
+    next();
+});
 
 const Product = model('Product', productSchema);
 
