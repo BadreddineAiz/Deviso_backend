@@ -55,7 +55,7 @@ const userSchema = new Schema(
         },
         logo: {
             type: String,
-            default: 'defaultUser.png',
+            default: '/defaultUser.png',
         },
         passwordConfirm: {
             type: String,

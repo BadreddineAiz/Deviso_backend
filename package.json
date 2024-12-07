@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "bwip-js": "^4.5.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
@@ -32,6 +33,7 @@
     "nodemon": "^3.1.0",
     "puppeteer": "^23.3.0",
     "sharp": "^0.33.5",
+    "uuid": "^11.0.3",
     "validator": "^13.11.0",
     "xss-clean": "^0.1.4"
   }

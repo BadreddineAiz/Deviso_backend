@@ -1,13 +1,10 @@
 import User from '../model/userModel.js';
 import asyncHandler from 'express-async-handler';
-import { getDocument, getDocuments } from './handlerFactory.js';
 import { filterObj } from '../utils/helpers.js';
 import multer from 'multer';
 import sharp from 'sharp';
 import AppError from '../utils/appError.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import fs from 'fs';
 
 const multerStorage = multer.memoryStorage();
@@ -30,18 +27,20 @@ export const uploadUserLogo = upload.single('logo');
 
 export const resizeUserLogo = async (req, res, next) => {
     if (!req.file) return next();
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
 
     try {
         // Define the output filename
-        req.file.filename = `userLogo-${req.user.id}.jpeg`;
         const outputPath = path.join(
-            __dirname,
-            '../public/images/users',
-            req.file.filename
+            'public',
+            req.user.id.toString(),
+            'images',
+            `userLogo-${req.user.id}.jpeg`
         );
-
+        req.file.filePath = path.join(
+            req.user.id.toString(),
+            'images',
+            `userLogo-${req.user.id}.jpeg`
+        );
         // Ensure the directory exists
         fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 
@@ -55,13 +54,9 @@ export const resizeUserLogo = async (req, res, next) => {
         next();
     } catch (err) {
         console.error('Error processing image:', err);
-        new AppError('Failed to process image', 500);
+        next(new AppError('Failed to process image', 500));
     }
 };
-
-export const getUsers = getDocuments(User);
-
-export const getUser = getDocument(User);
 
 export const getMe = asyncHandler(async (req, res) => {
     const document = await User.findById(req.user.id);
@@ -102,7 +97,7 @@ export const updateMe = asyncHandler(async (req, res) => {
         'secondColor',
         'logo'
     );
-    if (req.file) filteredBody.logo = req.file.filename;
+    if (req.file) filteredBody.logo = req.file.filePath;
 
     const updatedUser = await User.findByIdAndUpdate(
         req.user.id,
