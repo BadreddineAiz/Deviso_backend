@@ -272,13 +272,17 @@ export function FactureDevisTemplate({
         <fieldset class="client-info">
           <legend>Client</legend>
           <div>Nom</div>
-          <span class="client-name">${clientName}</span>
+          ${clientName ? `<span class="client-name">${clientName}</span>>` : ''}
           <div>Tel</div>
-          <span class="client-tel">${clientTel}</span>
+          ${clientTel ? `<span class="client-tel">${clientTel}</span>` : ''}
           <div>ICE</div>
-          <span class="client-ice">${clientICE}</span>
+          ${clientICE ? `<span class="client-ice">${clientICE}</span>` : ''}
           <div>Address</div>
-          <span class="client-address">${clientAddress}</span>
+          ${
+              clientAddress
+                  ? `<span class="client-address">${clientAddress}</span>`
+                  : ''
+          }
         </fieldset>
         <div class="user-info">
           <h2 class="user-name">${userName}</h2>

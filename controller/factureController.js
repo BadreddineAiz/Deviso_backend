@@ -88,7 +88,7 @@ export const getFactures = asyncHandler(async (req, res) => {
 
 export const updateFacture = asyncHandler(async (req, res) => {
     const filter = { user: req.user.id };
-    const filtredBody = filterObj(req.body, 'payer');
+    const filtredBody = filterObj(req.body, 'payer', 'code');
     if (req.file) filtredBody.rapport = req.file.fullPath;
 
     const facture = await Facture.findOneAndUpdate(
@@ -193,6 +193,7 @@ export const devisToFacture = asyncHandler(async (req, res, next) => {
                     bonCommand: devis.bonCommand,
                     numeroBonCommand: devis.numeroBonCommand,
                     object: devis.object,
+                    code: devis.code,
                     totalAmount,
                 },
             ],
@@ -300,6 +301,7 @@ export const toFactureAvoir = asyncHandler(async (req, res) => {
 
     const factureAvoir = await Facture.create({
         client: facture.client,
+        code: facture.code,
         devis: facture.devis,
         refFacture: { id: facture._id, numero: facture.numero },
         user: req.user.id,

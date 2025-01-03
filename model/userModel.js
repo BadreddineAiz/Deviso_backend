@@ -77,11 +77,14 @@ const userSchema = new Schema(
             type: [String],
             default: DefaultFeatures,
         },
+        suggestionsList: {
+            type: [String],
+            default: [],
+        },
         licenseExpire: {
             type: Date,
             default: () => addDays(new Date(), 7),
         },
-
         active: {
             type: Boolean,
             default: true,

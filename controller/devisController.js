@@ -121,15 +121,6 @@ export const createDevis = asyncHandler(async (req, res, next) => {
         if (!product) {
             return next(new AppError('Product Not Found', 404));
         }
-
-        if (article.quantity > product.quantity) {
-            return next(
-                new AppError(
-                    `Product ${product.designation} Quantity Only ${product.quantity} and You are asking for ${article.quantity}`,
-                    404
-                )
-            );
-        }
     }
 
     const devis = await Devis.create({ ...req.body, user: req.user.id });
@@ -147,7 +138,8 @@ export const updateDevis = asyncHandler(async (req, res, next) => {
         req.body,
         'object',
         'articles',
-        'numeroBonCommand'
+        'numeroBonCommand',
+        'code'
     );
 
     if (req.file) filtredBody.bonCommand = req.file.fullPath;
@@ -163,14 +155,6 @@ export const updateDevis = asyncHandler(async (req, res, next) => {
         });
         if (!product) {
             return next(new AppError('Product Not Found', 404));
-        }
-        if (article.quantity > product.quantity) {
-            return next(
-                new AppError(
-                    `Product Quantity Only ${product.quantity} and You ask for ${article.quantity}`,
-                    404
-                )
-            );
         }
     });
 
