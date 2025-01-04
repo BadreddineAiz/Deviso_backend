@@ -404,7 +404,7 @@ export function FactureDevisTemplate({
               : ''
       }
       ${
-          userICE
+          userPatente
               ? `<div class="user-patente">
             patente : <span>${userPatente}</span>
           </div>`
