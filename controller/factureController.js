@@ -88,7 +88,7 @@ export const getFactures = asyncHandler(async (req, res) => {
 
 export const updateFacture = asyncHandler(async (req, res) => {
     const filter = { user: req.user.id };
-    const filtredBody = filterObj(req.body, 'payer', 'code');
+    const filtredBody = filterObj(req.body, 'payer', 'code', 'marque');
     if (req.file) filtredBody.rapport = req.file.fullPath;
 
     const facture = await Facture.findOneAndUpdate(
@@ -194,6 +194,7 @@ export const devisToFacture = asyncHandler(async (req, res, next) => {
                     numeroBonCommand: devis.numeroBonCommand,
                     object: devis.object,
                     code: devis.code,
+                    marque: devis.marque,
                     totalAmount,
                 },
             ],
@@ -302,6 +303,7 @@ export const toFactureAvoir = asyncHandler(async (req, res) => {
     const factureAvoir = await Facture.create({
         client: facture.client,
         code: facture.code,
+        marque: facture.marque,
         devis: facture.devis,
         refFacture: { id: facture._id, numero: facture.numero },
         user: req.user.id,
@@ -336,6 +338,8 @@ export const exportFacture = asyncHandler(async (req, res) => {
 
     const user = facture.user;
     const client = facture.client;
+    const code = facture.code;
+    const marque = facture.marque;
 
     const mainColor = user.mainColor ?? '#161D6F';
     const secondColor = user.secondColor ?? '#98DED9';
@@ -372,6 +376,8 @@ export const exportFacture = asyncHandler(async (req, res) => {
         object,
         mainColor,
         secondColor,
+        code,
+        marque,
         logo,
         date,
         clientName,
@@ -479,6 +485,7 @@ export const exportBonLivraison = asyncHandler(async (req, res) => {
 
     const user = facture.user;
     const client = facture.client;
+    const code = facture.code;
 
     const docType = 'Bon de Livraison';
     const mainColor = user.mainColor ?? '#161D6F';
@@ -513,6 +520,7 @@ export const exportBonLivraison = asyncHandler(async (req, res) => {
         mainColor,
         secondColor,
         logo,
+        code,
         date,
         clientName,
         clientTel,

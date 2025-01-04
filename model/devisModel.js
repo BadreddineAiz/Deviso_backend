@@ -5,7 +5,8 @@ import articleSchema from './ArticleSchema.js';
 const devisSchema = new Schema(
     {
         numero: { type: Number },
-        code: { type: String, required: true, maxLength: 30 },
+        code: { type: String, maxLength: 30 },
+        marque: { type: String, maxLength: 30 },
         client: { type: Schema.Types.ObjectId, ref: 'Client' },
         facture: { type: Schema.Types.ObjectId, ref: 'Facture' },
         object: {

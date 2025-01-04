@@ -139,7 +139,8 @@ export const updateDevis = asyncHandler(async (req, res, next) => {
         'object',
         'articles',
         'numeroBonCommand',
-        'code'
+        'code',
+        'marque'
     );
 
     if (req.file) filtredBody.bonCommand = req.file.fullPath;
@@ -242,12 +243,16 @@ export const exportDevis = asyncHandler(async (req, res, next) => {
     const userTel = user.tel;
     const userAddress = user.address;
     const object = devis.object;
+    const code = devis.code;
+    const marque = devis.marque;
 
     const htmlContent = FactureDevisTemplate({
         docType,
         object,
         mainColor,
         secondColor,
+        marque,
+        code,
         logo,
         date,
         clientName,

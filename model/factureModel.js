@@ -6,7 +6,8 @@ import articleSchema from './ArticleSchema.js';
 const factureSchema = new Schema(
     {
         numero: { type: Number },
-        code: { type: String, required: true, maxLength: 30 },
+        code: { type: String, maxLength: 30 },
+        marque: { type: String, maxLength: 30 },
         client: { type: Schema.Types.ObjectId, ref: 'Client' },
         devis: { type: Schema.Types.ObjectId, ref: 'Devis' },
         rapport: String,

@@ -33,6 +33,8 @@ export function FactureDevisTemplate({
     clientName,
     clientTel,
     clientICE,
+    code,
+    marque,
     clientAddress,
     userName,
     userEmail,
@@ -271,16 +273,34 @@ export function FactureDevisTemplate({
         />
         <fieldset class="client-info">
           <legend>Client</legend>
-          <div>Nom</div>
-          ${clientName ? `<span class="client-name">${clientName}</span>>` : ''}
-          <div>Tel</div>
-          ${clientTel ? `<span class="client-tel">${clientTel}</span>` : ''}
-          <div>ICE</div>
-          ${clientICE ? `<span class="client-ice">${clientICE}</span>` : ''}
-          <div>Address</div>
+          ${
+              clientName
+                  ? `<div>Nom</div> <span class="client-name">${clientName}</span>`
+                  : ''
+          }
+          ${
+              clientTel
+                  ? `<div>Tel</div> <span class="client-tel">${clientTel}</span>`
+                  : ''
+          }
+          ${
+              code
+                  ? `<div>Matricule</div> <span class="client-code">${code}</span>`
+                  : ''
+          }
+          ${
+              marque
+                  ? `<div>Marque</div> <span class="client-marque">${marque}</span>`
+                  : ''
+          }
+          ${
+              clientICE
+                  ? `<div>ICE</div> <span class="client-ice">${clientICE}</span>`
+                  : ''
+          }
           ${
               clientAddress
-                  ? `<span class="client-address">${clientAddress}</span>`
+                  ? `<div>Address</div> <span class="client-address">${clientAddress}</span>`
                   : ''
           }
         </fieldset>

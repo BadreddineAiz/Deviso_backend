@@ -26,6 +26,7 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
     const unpaidFactures = await Facture.countDocuments({
         ...filter,
         payer: false,
+        createdAt: { $gte: startDate, $lte: endDate },
     });
 
     const deadlineFactures = await Facture.countDocuments({
