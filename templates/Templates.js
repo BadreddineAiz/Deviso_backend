@@ -187,7 +187,7 @@ export function FactureDevisTemplate({
             display: grid;
             grid-template-columns: ${
                 docType != 'Bon de Livraison'
-                    ? '1fr 100px 85px 50px'
+                    ? '1fr 80px 150px 50px'
                     : '1fr 100px'
             };
             
