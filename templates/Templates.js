@@ -195,6 +195,7 @@ export function FactureDevisTemplate({
         }
         .row div {
             margin: 2px;
+            font-size:11px;
         }
 
         article div {
@@ -215,6 +216,7 @@ export function FactureDevisTemplate({
           justify-content: end;
           text-transform: capitalize;
           font-weight: bold;
+          font-size:11px;
         }
 
         section.total>div{
@@ -228,6 +230,7 @@ export function FactureDevisTemplate({
 
         section.total .textTotal{
             grid-column: span 3;
+            max-width:300px
         }
         
         section.total .price{
@@ -240,7 +243,7 @@ export function FactureDevisTemplate({
             flex-wrap: wrap;
             gap: 10px;
             justify-content: center;
-            font-size: 15px;
+            font-size: 12px;
             font-weight: bold;
             margin-bottom: 50px;
         }
