@@ -93,7 +93,7 @@ export function FactureDevisTemplate({
         }
 
         .document {
-            height:${Math.ceil(articles.length / 20) * 100}vh;
+            height:${Math.ceil(articles.length / 18) * 100}vh;
             display: grid;
             grid-template-rows: ${
                 docType != 'Bon de Livraison'
