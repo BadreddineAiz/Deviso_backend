@@ -19,17 +19,15 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
     const numberProducts = await Product.countDocuments(filter);
 
     const valueProducts = await Product.aggregate([
-        { $match: filter },
         {
-            $group: {
-                _id: null,
-                totalValue: { $sum: { $multiply: ['$price', '$quantity'] } },
+            $addFields: {
+                totalValue: { $multiply: ['$quantity', '$prixHT'] }, // Calculate total value per product
             },
         },
         {
-            $project: {
-                _id: 0,
-                totalValue: 1,
+            $group: {
+                _id: null, // Group everything into a single result
+                totalSum: { $sum: '$totalValue' }, // Sum up the total values
             },
         },
     ]);
@@ -100,7 +98,7 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
             totalFactures,
             numberProducts,
             numberApproProducts,
-            valueProducts,
+            valueProducts: valueProducts[0]?.totalSum || 0,
             paidFactures,
             unpaidFactures,
             deadlineFactures,
