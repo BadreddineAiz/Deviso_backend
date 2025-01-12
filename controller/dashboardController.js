@@ -18,6 +18,22 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
 
     const numberProducts = await Product.countDocuments(filter);
 
+    const valueProducts = await Product.aggregate([
+        { $match: filter },
+        {
+            $group: {
+                _id: null,
+                totalValue: { $sum: { $multiply: ['$price', '$quantity'] } },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                totalValue: 1,
+            },
+        },
+    ]);
+
     const numberApproProducts = await Product.countDocuments({
         ...filter,
         $expr: { $lte: ['$quantity', '$minimalQuantity'] },
@@ -84,6 +100,7 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
             totalFactures,
             numberProducts,
             numberApproProducts,
+            valueProducts,
             paidFactures,
             unpaidFactures,
             deadlineFactures,
