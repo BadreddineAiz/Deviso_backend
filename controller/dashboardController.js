@@ -20,6 +20,9 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
 
     const valueProducts = await Product.aggregate([
         {
+            $match: filter, // Apply the filter
+        },
+        {
             $addFields: {
                 totalValue: { $multiply: ['$quantity', '$prixHT'] }, // Calculate total value per product
             },
