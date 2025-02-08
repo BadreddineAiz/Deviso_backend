@@ -12,7 +12,10 @@ export const getDashboardStats = expressAsyncHandler(async (req, res) => {
 
     const endDate = new Date(startDate.getFullYear(), 12, 1);
 
-    const filter = { user: req.user.id, active: true };
+    const filter = {
+        user: new mongoose.Types.ObjectId(req.user.id),
+        active: true,
+    };
 
     const totalClients = await Client.countDocuments(filter);
 
